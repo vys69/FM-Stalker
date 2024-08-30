@@ -23,21 +23,27 @@
   }
   
   .start-button {
+    position: relative;
+    display: inline-block;
+    font-size: 18px;
+    color: white;
+    font-style: italic;
+    padding: 5px 25px 5px 15px;
+    text-shadow: 1px 1px 1px #333;
+    border-radius: 0px 10px 15px 0px;
+    border: none;
+    transform: skewX(-3deg);
+    left: -5px;
+    box-shadow: 0px 5px 10px #79ce71 inset;
+    background: radial-gradient(circle, #5eac56 0%, #3c873c 100%) center / cover no-repeat;
     display: flex;
     align-items: center;
-    font-size: 14px;
-    color: white;
-    font-weight: bold;
-    padding: 2px 10px;
-    border-radius: 3px;
-    border: none;
-    background: radial-gradient(circle, #5eac56 0%, #3c873c 100%);
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
-  }
+}
   
   .start-button img {
     margin-right: 5px;
+    height: auto;
+    width: 25px;
   }
   
   .xp-footer-end {

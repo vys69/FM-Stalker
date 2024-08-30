@@ -11,3 +11,60 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.info-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+}
+
+.info-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.xp-footer-end {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.lastfm-stalker-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  height: 16px;
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  min-width: 0;
+}
+
+.lastfm-stalker-button img {
+  height: 16px;
+  width: 16px;
+  display: block;
+}
+
+.lastfm-stalker-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.time-display {
+  font-size: 11px;
+  font-family: 'Tahoma', sans-serif;
+  line-height: 16px;
+  padding-left: 2px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.xp-footer-end * {
+  margin: 0;
+  padding: 0;
+}
