@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const DEFAULT_USERNAME = 'vyzss';
 
 const NowPlaying = ({ currentTrack, error, onRefresh, isListening }) => {
+  useEffect(() => {
+    // Set up an interval to refresh every minute (60000 milliseconds)
+    const intervalId = setInterval(() => {
+      onRefresh();
+    }, 60000);
+
+    // Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, [onRefresh]); // Add onRefresh to the dependency array
+
   if (error) {
     return <div>Error: {error}</div>;
   }
