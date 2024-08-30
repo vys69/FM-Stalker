@@ -10,3 +10,23 @@ export const fetchLastFmData = async () => {
   }
   return response.json();
 };
+
+export const fetchUserStats = async (username) => {
+  const response = await fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${username}&api_key=${process.env.REACT_APP_LASTFM_API_KEY}&format=json`);
+  const data = await response.json();
+
+  if (data.error) {
+    throw new Error(data.message);
+  }
+
+  const totalScrobbles = parseInt(data.user.playcount);
+  const registeredDate = new Date(data.user.registered.unixtime * 1000);
+  const daysSinceRegistered = (new Date() - registeredDate) / (1000 * 60 * 60 * 24);
+  const avgSongsPerDay = (totalScrobbles / daysSinceRegistered).toFixed(2);
+
+  return {
+    username: data.user.name,
+    avgSongsPerDay,
+    totalScrobbles,
+  };
+};

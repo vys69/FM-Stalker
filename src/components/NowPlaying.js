@@ -1,40 +1,29 @@
-import React, { useState, memo } from 'react';
+import React from 'react';
 
-const NowPlaying = ({ currentTrack, error, onRefresh }) => {
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
+const DEFAULT_USERNAME = 'vyzss';
 
+const NowPlaying = ({ currentTrack, error, onRefresh, isListening }) => {
   if (error) {
-    return <p style={{ color: 'red' }}>{error}</p>;
+    return <div>Error: {error}</div>;
+  }
+
+  if (!isListening) {
+    return <div>{DEFAULT_USERNAME} isn't listening to music right now</div>;
   }
 
   if (!currentTrack) {
-    return (
-      <>
-        <p>Click 'Refresh' to load your current track</p>
-        <button onClick={onRefresh}>Refresh</button>
-      </>
-    );
+    return <div>Loading...</div>;
   }
 
+  const albumArt = currentTrack.image && currentTrack.image.length > 2 ? currentTrack.image[2]['#text'] : null;
+
   return (
-    <>
-      <div className="image-container">
-        {!isImageLoaded && <div className="loader"></div>}
-        <img 
-          src={currentTrack.image[2]['#text'] || 'https://via.placeholder.com/150'}
-          alt={currentTrack.name}
-          className={`album-image ${isImageLoaded ? 'loaded' : ''}`}
-          draggable="false"
-          onLoad={() => setIsImageLoaded(true)}
-          onError={() => setIsImageLoaded(true)}
-        />
-      </div>
-      <p><strong>{currentTrack.name}</strong></p>
-      <p>Artist: {currentTrack.artist['#text']}</p>
-      <p>Album: {currentTrack.album['#text']}</p>
+    <div>
+      {albumArt && <img src={albumArt} alt="Album Art" draggable="false" style={{ width: '100%', maxWidth: '300px' }} />}
+      <p>{currentTrack.name} by {currentTrack.artist['#text']}</p>
       <button onClick={onRefresh}>Refresh</button>
-    </>
+    </div>
   );
 };
 
-export default memo(NowPlaying);
+export default NowPlaying;

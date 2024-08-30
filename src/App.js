@@ -1,12 +1,15 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import Draggable from 'react-draggable';
 import XPTaskbar from './components/XPTaskbar';
 import RecentTracks from './components/RecentTracks';
 import MessageBox from './components/MessageBox';
 import NowPlaying from './components/NowPlaying';
-import { fetchLastFmData } from './utils/api';
+import { fetchLastFmData, fetchUserStats } from './utils/api';
 import './custom-xp.css';
 import './xp-taskbar.css';
+import UserStats from './components/UserStats';
+
+const DEFAULT_USERNAME = 'vyzss';
 
 const App = () => {
   const [currentTrack, setCurrentTrack] = useState(null);
@@ -16,6 +19,8 @@ const App = () => {
   const [messageBox, setMessageBox] = useState({ isVisible: false, message: '' });
   const [refreshCount, setRefreshCount] = useState(0);
   const [lastRefreshTime, setLastRefreshTime] = useState(0);
+  const [userStats, setUserStats] = useState(null);
+  const [isListening, setIsListening] = useState(true);
 
   const handleRefresh = useCallback(async () => {
     const now = Date.now();
@@ -34,31 +39,49 @@ const App = () => {
     setLastRefreshTime(now);
 
     try {
-      const data = await fetchLastFmData();
+      const data = await fetchLastFmData(DEFAULT_USERNAME);
       if (data.recenttracks && data.recenttracks.track.length > 0) {
         const tracks = data.recenttracks.track;
-        const newCurrentTrack = tracks[0];
         setRecentTracks(tracks.slice(0, 10));
         
-        if (!currentTrack || newCurrentTrack.name !== currentTrack.name || newCurrentTrack.artist['#text'] !== currentTrack.artist['#text']) {
-          setCurrentTrack(newCurrentTrack);
-        } else if (newCurrentTrack['@attr'] && newCurrentTrack['@attr'].nowplaying === 'true') {
-          setMessageBox({ isVisible: true, message: `You're currently listening to: ${newCurrentTrack.name} by ${newCurrentTrack.artist['#text']}` });
+        const lastTrack = tracks[0];
+        const lastPlayedTime = new Date(lastTrack.date?.uts * 1000 || Date.now());
+        const isCurrentlyListening = (Date.now() - lastPlayedTime) < 3600000; // 1 hour in milliseconds
+        setIsListening(isCurrentlyListening);
+
+        if (isCurrentlyListening) {
+          setCurrentTrack(lastTrack);
         } else {
-          setMessageBox({ isVisible: true, message: `Last played: ${newCurrentTrack.name} by ${newCurrentTrack.artist['#text']}` });
+          setCurrentTrack(null);
         }
       } else {
-        setError('No recent tracks found');
+        setError(null);
+        setCurrentTrack(null);
+        setIsListening(false);
+        setRecentTracks([]);
       }
+
+      // Fetch user stats after refreshing tracks
+      const stats = await fetchUserStats(DEFAULT_USERNAME);
+      setUserStats(stats);
     } catch (err) {
-      console.error('Error fetching data from Last.fm:', err);
-      setError('Error fetching data from Last.fm');
+      console.error('Error fetching data:', err);
+      setError('Error fetching data');
+      setCurrentTrack(null);
+      setIsListening(false);
+      setRecentTracks([]);
+      setUserStats(null);
     }
-  }, [currentTrack, lastRefreshTime, refreshCount]);
+  }, [lastRefreshTime, refreshCount]);
 
   const closeMessageBox = useCallback(() => {
     setMessageBox({ isVisible: false, message: '' });
   }, []);
+
+  // Load data once when component mounts
+  useEffect(() => {
+    handleRefresh();
+  }, []); // Empty dependency array
 
   return (
     <div className="app-container">
@@ -78,12 +101,16 @@ const App = () => {
                 <menu role="tablist" aria-label="Last.fm Tabs">
                   <button role="tab" aria-selected={activeTab === 'nowPlaying'} aria-controls="tab-nowPlaying" onClick={() => setActiveTab('nowPlaying')}>Now Playing</button>
                   <button role="tab" aria-selected={activeTab === 'recentTracks'} aria-controls="tab-recentTracks" onClick={() => setActiveTab('recentTracks')}>Recent Tracks</button>
+                  <button role="tab" aria-selected={activeTab === 'userStats'} aria-controls="tab-userStats" onClick={() => setActiveTab('userStats')}>User Stats</button>
                 </menu>
                 <article role="tabpanel" id="tab-nowPlaying" hidden={activeTab !== 'nowPlaying'}>
-                  <NowPlaying currentTrack={currentTrack} error={error} onRefresh={handleRefresh} />
+                  <NowPlaying currentTrack={currentTrack} error={error} onRefresh={handleRefresh} isListening={isListening} />
                 </article>
                 <article role="tabpanel" id="tab-recentTracks" hidden={activeTab !== 'recentTracks'}>
                   <RecentTracks tracks={recentTracks} />
+                </article>
+                <article role="tabpanel" id="tab-userStats" hidden={activeTab !== 'userStats'}>
+                  <UserStats stats={userStats} error={error} username={DEFAULT_USERNAME} />
                 </article>
               </section>
             </div>
