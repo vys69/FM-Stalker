@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, memo } from 'react';
 import Draggable from 'react-draggable';
 import XPTaskbar from './components/XPTaskbar';
 import RecentTracks from './components/RecentTracks';
