@@ -5,6 +5,10 @@ import Confetti from 'react-confetti';
 const Timer = () => {
   const [time, setTime] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [bestTime, setBestTime] = useState(() => {
+    const saved = localStorage.getItem('bestTime');
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const lastMilestone = useRef(0);
   const timerRef = useRef(null);
   const [timerSize, setTimerSize] = useState({ width: 0, height: 0 });
@@ -30,39 +34,62 @@ const Timer = () => {
     const interval = setInterval(() => {
       setTime(prevTime => {
         const newTime = prevTime + 10;
-        const minutes = Math.floor(newTime / 60000);
+        const seconds = Math.floor(newTime / 1000);
+        const minutes = Math.floor(seconds / 60);
         
-        // Check for 1 minute milestone
-        if (minutes === 1 && lastMilestone.current === 0) {
-          console.log("Milestone reached: 1 minute");
-          setShowConfetti(true);
-          setTimeout(() => setShowConfetti(false), 5000);
-          lastMilestone.current = 1;
-        }
-        // Check for doubling milestones
-        else if (minutes > 1 && minutes === lastMilestone.current * 2) {
-          console.log(`Milestone reached: ${minutes} minutes`);
-          setShowConfetti(true);
-          setTimeout(() => setShowConfetti(false), 5000);
-          lastMilestone.current = minutes;
+        if (seconds <= 64) {
+          // Check for second milestones
+          if (seconds === 1 || (seconds > 1 && Math.log2(seconds) % 1 === 0)) {
+            setShowConfetti(true);
+            setTimeout(() => setShowConfetti(false), 5000);
+            lastMilestone.current = seconds;
+          }
+        } else {
+          // Check for minute milestones
+          if (minutes === 1 || (minutes > 1 && Math.log2(minutes) % 1 === 0 && minutes !== lastMilestone.current)) {
+            setShowConfetti(true);
+            setTimeout(() => setShowConfetti(false), 5000);
+            lastMilestone.current = minutes;
+          }
         }
         
         return newTime;
       });
     }, 10);
 
+    // Add event listener for page unload
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+      saveBestTime();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       clearInterval(interval);
       window.removeEventListener('resize', updateSize);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      saveBestTime();
     };
   }, []);
+
+  useEffect(() => {
+    saveBestTime();
+  }, [time]);
+
+  const saveBestTime = () => {
+    if (time > bestTime) {
+      localStorage.setItem('bestTime', time.toString());
+      setBestTime(time);
+    }
+  };
 
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60000);
     const seconds = Math.floor((time % 60000) / 1000);
     const milliseconds = time % 1000;
 
-    return `You've been stalking me for ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
   };
 
   return (
@@ -103,7 +130,10 @@ const Timer = () => {
         </div>
         <div className="window-body">
           <p style={{ textAlign: 'center', fontSize: '1.2em' }}>
-            {formatTime(time)}
+            You've been stalking me for {formatTime(time)}
+          </p>
+          <p style={{ textAlign: 'center', fontSize: '0.9em' }}>
+            Best time: {formatTime(bestTime)}
           </p>
         </div>
       </div>
