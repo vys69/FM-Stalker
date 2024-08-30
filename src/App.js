@@ -25,16 +25,7 @@ const App = () => {
   const handleRefresh = useCallback(async () => {
     const now = Date.now();
     if (now - lastRefreshTime < 5000) {
-      setRefreshCount(prevCount => {
-        const newCount = prevCount + 1;
-        if (newCount >= 3) {
-          setMessageBox({ isVisible: true, message: "Please wait a moment before refreshing again." });
-        }
-        return newCount;
-      });
-      if (refreshCount >= 2) return;
-    } else {
-      setRefreshCount(0);
+      setMessageBox({ isVisible: true, message: "Please wait a moment before refreshing again." });
     }
     setLastRefreshTime(now);
 
@@ -72,7 +63,7 @@ const App = () => {
       setRecentTracks([]);
       setUserStats(null);
     }
-  }, [lastRefreshTime, refreshCount]);
+  }, [lastRefreshTime]);
 
   const closeMessageBox = useCallback(() => {
     setMessageBox({ isVisible: false, message: '' });
