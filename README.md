@@ -1,6 +1,6 @@
-# Last.fm Live Player
+# Last.fm LIVE 📻
 
-![Last.fm Live Player Header](https://example.com/lastfm-live-player-header.png)
+![Last.fm LIVE 📻](https://github.com/user-attachments/assets/652bbaf0-e03f-47f7-b02b-247614588389)
 
 ## Description
 
@@ -13,12 +13,18 @@ Key features:
 - Windows XP-style UI with draggable window
 - Tabbed interface for easy navigation
 
+## How to Get a Last.fm API Key
+
+1. Visit the [Last.fm API account creation page](https://www.last.fm/api/account/create).
+2. Fill out the form with your application details.
+3. After submitting, you'll receive an API key that you can use in the `.env` file.
+
 ## How to Run and Build
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/lastfm-live-player.git
-   cd lastfm-live-player
+   git clone https://github.com/vys69/LastFM-Live.git
+   cd LastFM-Live
    ```
 
 2. Install dependencies:
@@ -41,12 +47,6 @@ Key features:
    ```
    npm run build
    ```
-
-## How to Get a Last.fm API Key
-
-1. Visit the [Last.fm API account creation page](https://www.last.fm/api/account/create).
-2. Fill out the form with your application details.
-3. After submitting, you'll receive an API key that you can use in the `.env` file.
 
 ## Connect with the Developer
 
