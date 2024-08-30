@@ -13,6 +13,12 @@ Key features:
 - Windows XP-style UI with draggable window
 - Tabbed interface for easy navigation
 
+## How to Get a Last.fm API Key
+
+1. Visit the [Last.fm API account creation page](https://www.last.fm/api/account/create).
+2. Fill out the form with your application details.
+3. After submitting, you'll receive an API key that you can use in the `.env` file.
+
 ## How to Run and Build
 
 1. Clone the repository:
@@ -41,12 +47,6 @@ Key features:
    ```
    npm run build
    ```
-
-## How to Get a Last.fm API Key
-
-1. Visit the [Last.fm API account creation page](https://www.last.fm/api/account/create).
-2. Fill out the form with your application details.
-3. After submitting, you'll receive an API key that you can use in the `.env` file.
 
 ## Connect with the Developer
 
