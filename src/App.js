@@ -8,6 +8,7 @@ import { fetchLastFmData, fetchUserStats } from './utils/api';
 import './custom-xp.css';
 import './xp-taskbar.css';
 import UserStats from './components/UserStats';
+import Timer from './components/Timer';
 
 const DEFAULT_USERNAME = 'vyzss';
 
@@ -108,6 +109,7 @@ const App = () => {
           </div>
         </Draggable>
       </div>
+      <Timer />
       <XPTaskbar />
       <MessageBox 
         message={messageBox.message}
