@@ -14,7 +14,7 @@ const InfoWindow = ({ onClose }) => {
         <div className="window-body">
           <p>Created by grim</p>
           <p>
-            <a href="https://github.com/vys69" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://github.com/vys69/FM-Stalker" target="_blank" rel="noopener noreferrer">GitHub</a>
           </p>
           <p>
             <a href="https://twitter.com/fuckgrimlabs" target="_blank" rel="noopener noreferrer">Twitter</a>
