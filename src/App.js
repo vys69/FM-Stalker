@@ -27,7 +27,7 @@ const App = () => {
     const saved = localStorage.getItem('windowPositions');
     return saved ? JSON.parse(saved) : {
       lastfmPlayer: { x: 50, y: 50 },
-      // Add other windows here if needed
+      stalkingTimer: { x: window.innerWidth - 250, y: 50 }, // Default position for the timer
     };
   });
 
@@ -78,6 +78,15 @@ const App = () => {
     setMessageBox({ isVisible: false, message: '' });
   }, []);
 
+  const updateWindowPosition = useCallback((windowName, x, y) => {
+    const newPositions = {
+      ...windowPositions,
+      [windowName]: { x, y }
+    };
+    setWindowPositions(newPositions);
+    localStorage.setItem('windowPositions', JSON.stringify(newPositions));
+  }, [windowPositions]);
+
   // Load data once when component mounts
   useEffect(() => {
     handleRefresh();
@@ -90,14 +99,7 @@ const App = () => {
           bounds="parent"
           handle=".title-bar"
           position={windowPositions.lastfmPlayer}
-          onStop={(e, data) => {
-            const newPositions = {
-              ...windowPositions,
-              lastfmPlayer: { x: data.x, y: data.y }
-            };
-            setWindowPositions(newPositions);
-            localStorage.setItem('windowPositions', JSON.stringify(newPositions));
-          }}
+          onStop={(e, data) => updateWindowPosition('lastfmPlayer', data.x, data.y)}
         >
           <div className="window" style={{ width: '300px', position: 'absolute' }}>
             <div className="title-bar">
@@ -128,8 +130,12 @@ const App = () => {
             </div>
           </div>
         </Draggable>
+        
+        <Timer 
+          position={windowPositions.stalkingTimer}
+          onPositionChange={(x, y) => updateWindowPosition('stalkingTimer', x, y)}
+        />
       </div>
-      <Timer />
       <XPTaskbar />
       <MessageBox 
         message={messageBox.message}

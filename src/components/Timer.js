@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Draggable from 'react-draggable';
 import Confetti from 'react-confetti';
 
-const Timer = () => {
+const Timer = ({ position, onPositionChange }) => {
   const [time, setTime] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const [bestTime, setBestTime] = useState(() => {
@@ -93,15 +93,18 @@ const Timer = () => {
   };
 
   return (
-    <Draggable bounds="parent" handle=".title-bar">
+    <Draggable 
+      bounds="parent" 
+      handle=".title-bar"
+      position={position}
+      onStop={(e, data) => onPositionChange(data.x, data.y)}
+    >
       <div 
         ref={timerRef}
         className="window" 
         style={{ 
           width: '200px', 
           position: 'absolute', 
-          top: '50px', 
-          right: '50px',
         }}
       >
         {showConfetti && (
