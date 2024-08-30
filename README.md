@@ -28,7 +28,8 @@ Key features:
 
 3. Create a `.env` file in the root directory and add your Last.fm API key:
    ```
-   REACT_APP_LASTFM_API_KEY=your_api_key_here
+   REACT_APP_LASTFM_API_KEY=REPLACE_ME_WITH_API_KEY
+   REACT_APP_LASTFM_USERNAME=REPLACE_ME_WITH_USERNAME
    ```
 
 4. Run the development server:
@@ -51,7 +52,3 @@ Key features:
 
 - Twitter: [@fuckgrimlabs](https://twitter.com/fuckgrimlabs)
 - Discord: [usbank](https://discord.com/users/913656519847981067)
-
-## License
-
-[Add your chosen license here]
