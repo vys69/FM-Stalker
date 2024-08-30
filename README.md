@@ -4,14 +4,13 @@
 
 ## Description
 
-Last.fm Live Player is a React-based web application that allows users to view your real-time listening activity on Last.fm. The app features a Windows XP-inspired interface with a draggable window, displaying the currently playing track and your 10 most recently played songs. Users can refresh the data to see live updates of your music listening habits.
+Stalk my every move. Get live updates on what music I'm listening to, while knowing exactly how long you've been a creep for with the timer 😟
 
 Key features:
-- Live "Now Playing" display
+- "Now Playing" display
 - List of 10 most recent tracks
-- Manual refresh functionality
-- Windows XP-style UI with draggable window
-- Tabbed interface for easy navigation
+- Manually refresh in case you wanted to stalk me... FASTER (?)
+- Windows XP-style UI with draggable windows
 
 ## How to Get a Last.fm API Key
 
