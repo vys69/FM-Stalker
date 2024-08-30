@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useCallback, memo } from 'react';
-import Pusher from 'pusher-js';
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import Draggable from 'react-draggable';
 import XPTaskbar from './components/XPTaskbar';
 import RecentTracks from './components/RecentTracks';
 import MessageBox from './components/MessageBox';
 import NowPlaying from './components/NowPlaying';
-import InfoWindow from './components/InfoWindow';
 import { fetchLastFmData, fetchUserStats } from './utils/api';
 import './custom-xp.css';
 import './xp-taskbar.css';
@@ -13,12 +11,6 @@ import UserStats from './components/UserStats';
 import Timer from './components/Timer';
 
 const DEFAULT_USERNAME = 'vyzss';
-
-const pusher = new Pusher(process.env.PUSHER_KEY, {
-  cluster: process.env.PUSHER_CLUSTER
-});
-
-const channel = pusher.subscribe('fm-stalker-channel');
 
 const App = () => {
   const [currentTrack, setCurrentTrack] = useState(null);
@@ -30,10 +22,6 @@ const App = () => {
   const [lastRefreshTime, setLastRefreshTime] = useState(0);
   const [userStats, setUserStats] = useState(null);
   const [isListening, setIsListening] = useState(true);
-  const [windowPositions, setWindowPositions] = useState({
-    lastfmPlayer: { x: 50, y: 50 },
-    infoWindow: { x: 100, y: 100 }
-  });
 
   const handleRefresh = useCallback(async () => {
     const now = Date.now();
@@ -82,61 +70,16 @@ const App = () => {
     setMessageBox({ isVisible: false, message: '' });
   }, []);
 
-  const handleDragStop = useCallback((id, e, data) => {
-    setWindowPositions(prev => ({
-      ...prev,
-      [id]: { x: data.x, y: data.y }
-    }));
-
-    fetch('/api/move-window', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, x: data.x, y: data.y })
-    }).catch(error => console.error('Error:', error));
-  }, []);
-
-  const handleTabSelect = useCallback((tab) => {
-    setActiveTab(tab);
-
-    fetch('/api/select-tab', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tab })
-    }).catch(error => console.error('Error:', error));
-  }, []);
-
+  // Load data once when component mounts
   useEffect(() => {
     handleRefresh();
-    Pusher.logToConsole = true;
-
-    channel.bind('window-moved', function(data) {
-      setWindowPositions(prev => ({
-        ...prev,
-        [data.id]: { x: data.x, y: data.y }
-      }));
-    });
-
-    channel.bind('tab-selected', function(data) {
-      setActiveTab(data.tab);
-    });
-
-    return () => {
-      channel.unbind_all();
-      pusher.unsubscribe('fm-stalker-channel');
-      pusher.disconnect();
-    };
-  }, [handleRefresh]);
+  }, []); // Empty dependency array
 
   return (
     <div className="app-container">
       <div className="content">
-        <Draggable 
-          bounds="parent" 
-          handle=".title-bar"
-          position={windowPositions.lastfmPlayer}
-          onStop={(e, data) => handleDragStop('lastfmPlayer', e, data)}
-        >
-          <div className="window" style={{ width: '300px', position: 'absolute' }}>
+        <Draggable bounds="parent" handle=".title-bar">
+          <div className="window" style={{ width: '300px', position: 'absolute', top: '50px', left: '50px' }}>
             <div className="title-bar">
               <div className="title-bar-text">Last.fm Player</div>
               <div className="title-bar-controls">
@@ -148,9 +91,9 @@ const App = () => {
             <div className="window-body">
               <section className="tabs">
                 <menu role="tablist" aria-label="Last.fm Tabs">
-                  <button role="tab" aria-selected={activeTab === 'nowPlaying'} aria-controls="tab-nowPlaying" onClick={() => handleTabSelect('nowPlaying')}>Now Playing</button>
-                  <button role="tab" aria-selected={activeTab === 'recentTracks'} aria-controls="tab-recentTracks" onClick={() => handleTabSelect('recentTracks')}>Recent Tracks</button>
-                  <button role="tab" aria-selected={activeTab === 'userStats'} aria-controls="tab-userStats" onClick={() => handleTabSelect('userStats')}>User Stats</button>
+                  <button role="tab" aria-selected={activeTab === 'nowPlaying'} aria-controls="tab-nowPlaying" onClick={() => setActiveTab('nowPlaying')}>Now Playing</button>
+                  <button role="tab" aria-selected={activeTab === 'recentTracks'} aria-controls="tab-recentTracks" onClick={() => setActiveTab('recentTracks')}>Recent Tracks</button>
+                  <button role="tab" aria-selected={activeTab === 'userStats'} aria-controls="tab-userStats" onClick={() => setActiveTab('userStats')}>User Stats</button>
                 </menu>
                 <article role="tabpanel" id="tab-nowPlaying" hidden={activeTab !== 'nowPlaying'}>
                   <NowPlaying currentTrack={currentTrack} error={error} onRefresh={handleRefresh} isListening={isListening} />
@@ -165,10 +108,6 @@ const App = () => {
             </div>
           </div>
         </Draggable>
-        <InfoWindow 
-          position={windowPositions.infoWindow}
-          onDragStop={(e, data) => handleDragStop('infoWindow', e, data)}
-        />
       </div>
       <Timer />
       <XPTaskbar />
