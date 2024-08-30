@@ -1,0 +1,126 @@
+@font-face {
+    font-family: "Pixelated MS Sans Serif";
+    src: url(https://unpkg.com/98.css@0.1.16/dist/ms_sans_serif.woff) format("woff"),
+         url(https://unpkg.com/98.css@0.1.16/dist/ms_sans_serif.woff2) format("woff2");
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: "Pixelated MS Sans Serif";
+    src: url(https://unpkg.com/98.css@0.1.16/dist/ms_sans_serif_bold.woff) format("woff"),
+         url(https://unpkg.com/98.css@0.1.16/dist/ms_sans_serif_bold.woff2) format("woff2");
+    font-weight: bold;
+    font-style: normal;
+  }
+  
+  /* Import the rest of XP.css */
+  @import url('https://unpkg.com/xp.css@0.2.3/dist/XP.css');
+
+  /* Add these styles to your existing custom-xp.css file */
+
+  .app-container {
+    background-image: url('/public/bliss.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .content {
+    flex: 1;
+    position: relative;
+  }
+
+  .image-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%;
+    margin-bottom: 10px;
+  }
+
+  .image-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+  }
+
+  .image-container img.loaded {
+    opacity: 1;
+  }
+
+  .loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+
+  .message-box-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .tabs {
+    margin-top: 10px;
+  }
+
+  .tabs menu[role="tablist"] {
+    padding-left: 0;
+    margin-bottom: 0;
+  }
+
+  .tabs [role="tab"] {
+    margin-right: 4px;
+  }
+
+  .tabs [role="tabpanel"] {
+    padding: 10px;
+    border: 1px solid #dfdfdf;
+    border-top: none;
+  }
+
+  .recent-tracks {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .recent-tracks .tree-view {
+    padding-left: 0;
+  }
+
+  .recent-tracks .tree-view li {
+    padding: 5px 0;
+    border-bottom: 1px solid #dfdfdf;
+  }
+
+  .recent-tracks .tree-view li:last-child {
+    border-bottom: none;
+  }
