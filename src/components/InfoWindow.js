@@ -1,14 +1,18 @@
 import React from 'react';
 import Draggable from 'react-draggable';
 
-const InfoWindow = ({ onClose }) => {
+const InfoWindow = ({ position, onDragStop }) => {
   return (
-    <Draggable handle=".title-bar">
-      <div className="window" style={{ position: 'absolute', bottom: '40px', right: '10px', width: '250px' }}>
+    <Draggable 
+      handle=".title-bar" 
+      position={position}
+      onStop={onDragStop}
+    >
+      <div className="window" style={{ position: 'absolute', width: '250px' }}>
         <div className="title-bar">
           <div className="title-bar-text">Info</div>
           <div className="title-bar-controls">
-            <button aria-label="Close" onClick={onClose}></button>
+            <button aria-label="Close"></button>
           </div>
         </div>
         <div className="window-body">
