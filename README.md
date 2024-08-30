@@ -17,8 +17,8 @@ Key features:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/lastfm-live-player.git
-   cd lastfm-live-player
+   git clone https://github.com/vys69/LastFM-Live.git
+   cd LastFM-Live
    ```
 
 2. Install dependencies:
