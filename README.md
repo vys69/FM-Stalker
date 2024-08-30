@@ -1,4 +1,4 @@
-# Last.fm STALKER 📻
+# FMStalker 👀📻
 
 ![Last.FM STALKER](https://github.com/user-attachments/assets/32d377c8-6e60-4b54-b160-62bd9d811b07)
 
