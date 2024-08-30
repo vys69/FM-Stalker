@@ -1,6 +1,6 @@
-# Last.fm Live Player
+# Last.fm LIVE 📻
 
-![Last.fm Live Player Header](https://example.com/lastfm-live-player-header.png)
+![Last.fm LIVE 📻](https://github.com/user-attachments/assets/652bbaf0-e03f-47f7-b02b-247614588389)
 
 ## Description
 
