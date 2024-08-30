@@ -1,6 +1,6 @@
-# Last.fm LIVE 📻
+# Last.fm STALKER 📻
 
-![Last.fm LIVE 📻](https://github.com/user-attachments/assets/652bbaf0-e03f-47f7-b02b-247614588389)
+![Last.FM STALKER](https://github.com/user-attachments/assets/32d377c8-6e60-4b54-b160-62bd9d811b07)
 
 ## Description
 
@@ -23,7 +23,7 @@ Key features:
 
 1. Clone the repository:
    ```
-   git clone https://github.com/vys69/LastFM-Live.git
+   git clone https://github.com/vys69/FM-Stalker.git
    cd LastFM-Live
    ```
 
