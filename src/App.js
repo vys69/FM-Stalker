@@ -23,6 +23,14 @@ const App = () => {
   const [userStats, setUserStats] = useState(null);
   const [isListening, setIsListening] = useState(true);
 
+  const [windowPositions, setWindowPositions] = useState(() => {
+    const saved = localStorage.getItem('windowPositions');
+    return saved ? JSON.parse(saved) : {
+      lastfmPlayer: { x: 50, y: 50 },
+      // Add other windows here if needed
+    };
+  });
+
   const handleRefresh = useCallback(async () => {
     const now = Date.now();
     if (now - lastRefreshTime < 5000) {
@@ -78,8 +86,20 @@ const App = () => {
   return (
     <div className="app-container">
       <div className="content">
-        <Draggable bounds="parent" handle=".title-bar">
-          <div className="window" style={{ width: '300px', position: 'absolute', top: '50px', left: '50px' }}>
+        <Draggable
+          bounds="parent"
+          handle=".title-bar"
+          position={windowPositions.lastfmPlayer}
+          onStop={(e, data) => {
+            const newPositions = {
+              ...windowPositions,
+              lastfmPlayer: { x: data.x, y: data.y }
+            };
+            setWindowPositions(newPositions);
+            localStorage.setItem('windowPositions', JSON.stringify(newPositions));
+          }}
+        >
+          <div className="window" style={{ width: '300px', position: 'absolute' }}>
             <div className="title-bar">
               <div className="title-bar-text">Last.fm Player</div>
               <div className="title-bar-controls">
