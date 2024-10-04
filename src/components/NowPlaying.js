@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
 
-const DEFAULT_USERNAME = 'vyzss';
-
-const NowPlaying = ({ currentTrack, error, onRefresh, isListening }) => {
+const NowPlaying = ({ currentTrack, error, onRefresh, isListening, username }) => {
   useEffect(() => {
     // Set up an interval to refresh every minute (60000 milliseconds)
     const intervalId = setInterval(() => {
@@ -20,7 +18,7 @@ const NowPlaying = ({ currentTrack, error, onRefresh, isListening }) => {
   if (!isListening) {
     return (
       <div>
-        <p>{DEFAULT_USERNAME} isn't listening to music right now</p>
+        <p>{username} isn't listening to music right now</p>
         <button onClick={onRefresh}>Refresh</button>
       </div>
     );
@@ -29,7 +27,7 @@ const NowPlaying = ({ currentTrack, error, onRefresh, isListening }) => {
   if (!currentTrack) {
     return (
       <div>
-        <p>Loading...</p>
+        <img style={{ width: '100%', maxWidth: '300px' }} src={require('../output.gif')} alt="Loading..." />
         <button onClick={onRefresh}>Refresh</button>
       </div>
     );

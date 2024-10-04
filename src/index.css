@@ -68,3 +68,40 @@ code {
   margin: 0;
   padding: 0;
 }
+
+ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 30px;
+}
+
+span.playcount {
+  background: #ece9d8;
+  padding: 1px 3px;
+}
+
+.generation-container {
+  padding: 10px;
+  position: relative;
+}
+
+.fading.grid-image{
+  opacity: 50%;
+  filter: blur(3px);
+  transition: opacity 0.5s, filter 0.5s;
+}
+
+.grid-image:not(.fading) {
+  opacity: 100%;
+  filter: blur(0px);
+  transition: opacity 0.5s, filter 0.5s;
+}
+
+img.loading-gif.fading {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+}

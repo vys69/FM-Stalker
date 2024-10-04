@@ -1,52 +1,63 @@
-import React, { useState, useCallback, useEffect, memo } from 'react';
+import React, { useState, useCallback, useEffect, memo, useRef } from 'react';
 import Draggable from 'react-draggable';
 import XPTaskbar from './components/XPTaskbar';
 import RecentTracks from './components/RecentTracks';
 import MessageBox from './components/MessageBox';
 import NowPlaying from './components/NowPlaying';
-import { fetchLastFmData, fetchUserStats } from './utils/api';
-import './custom-xp.css';
-import './xp-taskbar.css';
 import UserStats from './components/UserStats';
 import Timer from './components/Timer';
-
-const DEFAULT_USERNAME = 'vyzss';
+import Grid from './components/Grid';  // Import the new Grid component
+import { fetchLastFmData, fetchUserStats, fetchTopAlbums, fetchTopArtists, fetchTopTracks } from './utils/api';
+import './custom-xp.css';
+import './xp-taskbar.css';
 
 const App = () => {
+  const [username, setUsername] = useState('');
   const [currentTrack, setCurrentTrack] = useState(null);
   const [recentTracks, setRecentTracks] = useState([]);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('nowPlaying');
   const [messageBox, setMessageBox] = useState({ isVisible: false, message: '' });
-  const [refreshCount, setRefreshCount] = useState(0);
-  const [lastRefreshTime, setLastRefreshTime] = useState(0);
   const [userStats, setUserStats] = useState(null);
   const [isListening, setIsListening] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [musicRefreshCount, setMusicRefreshCount] = useState(0);
 
   const [windowPositions, setWindowPositions] = useState(() => {
     const saved = localStorage.getItem('windowPositions');
     return saved ? JSON.parse(saved) : {
       lastfmPlayer: { x: 50, y: 50 },
-      stalkingTimer: { x: window.innerWidth - 250, y: 50 }, // Default position for the timer
+      stalkingTimer: { x: window.innerWidth - 250, y: 50 },
     };
   });
 
-  const handleRefresh = useCallback(async () => {
-    const now = Date.now();
-    if (now - lastRefreshTime < 5000) {
-      setMessageBox({ isVisible: true, message: "Please wait a moment before refreshing again." });
-    }
-    setLastRefreshTime(now);
+  const [topAlbums, setTopAlbums] = useState([]);
+  const [topArtists, setTopArtists] = useState([]);
+  const [topTracks, setTopTracks] = useState([]);
+
+  const handleMusicRefresh = useCallback(async () => {
+    setMusicRefreshCount(prev => prev + 1);
+    if (!username) return;
+
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const data = await fetchLastFmData(DEFAULT_USERNAME);
+      const [data, stats, albums, artists, tracks] = await Promise.all([
+        fetchLastFmData(username),
+        fetchUserStats(username),
+        fetchTopAlbums(username),
+        fetchTopArtists(username),
+        fetchTopTracks(username)
+      ]);
+
       if (data.recenttracks && data.recenttracks.track.length > 0) {
         const tracks = data.recenttracks.track;
         setRecentTracks(tracks.slice(0, 10));
         
         const lastTrack = tracks[0];
         const lastPlayedTime = new Date(lastTrack.date?.uts * 1000 || Date.now());
-        const isCurrentlyListening = (Date.now() - lastPlayedTime) < 3600000; // 1 hour in milliseconds
+        const isCurrentlyListening = (Date.now() - lastPlayedTime) < 3600000;
         setIsListening(isCurrentlyListening);
 
         if (isCurrentlyListening) {
@@ -55,24 +66,36 @@ const App = () => {
           setCurrentTrack(null);
         }
       } else {
-        setError(null);
         setCurrentTrack(null);
         setIsListening(false);
         setRecentTracks([]);
       }
 
-      // Fetch user stats after refreshing tracks
-      const stats = await fetchUserStats(DEFAULT_USERNAME);
       setUserStats(stats);
+      setTopAlbums(albums);
+      setTopArtists(artists);
+      setTopTracks(tracks);
     } catch (err) {
       console.error('Error fetching data:', err);
-      setError('Error fetching data');
-      setCurrentTrack(null);
-      setIsListening(false);
-      setRecentTracks([]);
-      setUserStats(null);
+      setError('Error fetching data. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-  }, [lastRefreshTime]);
+  }, [username]);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlUsername = urlParams.get('username');
+    if (urlUsername) {
+      setUsername(urlUsername);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (username) {
+      handleMusicRefresh();
+    }
+  }, [username, handleMusicRefresh]);
 
   const closeMessageBox = useCallback(() => {
     setMessageBox({ isVisible: false, message: '' });
@@ -87,10 +110,7 @@ const App = () => {
     localStorage.setItem('windowPositions', JSON.stringify(newPositions));
   }, [windowPositions]);
 
-  // Load data once when component mounts
-  useEffect(() => {
-    handleRefresh();
-  }, []); // Empty dependency array
+  const draggableRef = useRef(null);
 
   return (
     <div className="app-container">
@@ -100,8 +120,9 @@ const App = () => {
           handle=".title-bar"
           position={windowPositions.lastfmPlayer}
           onStop={(e, data) => updateWindowPosition('lastfmPlayer', data.x, data.y)}
+          nodeRef={draggableRef}
         >
-          <div className="window" style={{ width: '300px', position: 'absolute' }}>
+          <div ref={draggableRef} className="window" style={{ width: '315px', position: 'absolute' }}>
             <div className="title-bar">
               <div className="title-bar-text">Last.fm Player</div>
               <div className="title-bar-controls">
@@ -116,15 +137,19 @@ const App = () => {
                   <button role="tab" aria-selected={activeTab === 'nowPlaying'} aria-controls="tab-nowPlaying" onClick={() => setActiveTab('nowPlaying')}>Now Playing</button>
                   <button role="tab" aria-selected={activeTab === 'recentTracks'} aria-controls="tab-recentTracks" onClick={() => setActiveTab('recentTracks')}>Recent Tracks</button>
                   <button role="tab" aria-selected={activeTab === 'userStats'} aria-controls="tab-userStats" onClick={() => setActiveTab('userStats')}>User Stats</button>
+                  <button role="tab" aria-selected={activeTab === 'grid'} aria-controls="tab-grid" onClick={() => setActiveTab('grid')}>Grid</button>
                 </menu>
                 <article role="tabpanel" id="tab-nowPlaying" hidden={activeTab !== 'nowPlaying'}>
-                  <NowPlaying currentTrack={currentTrack} error={error} onRefresh={handleRefresh} isListening={isListening} />
+                  <NowPlaying currentTrack={currentTrack} username={username} error={error} onRefresh={handleMusicRefresh} isListening={isListening} />
                 </article>
                 <article role="tabpanel" id="tab-recentTracks" hidden={activeTab !== 'recentTracks'}>
                   <RecentTracks tracks={recentTracks} />
                 </article>
                 <article role="tabpanel" id="tab-userStats" hidden={activeTab !== 'userStats'}>
-                  <UserStats stats={userStats} error={error} username={DEFAULT_USERNAME} />
+                  <UserStats stats={userStats} error={error} username={username} topAlbums={topAlbums} topArtists={topArtists} topTracks={topTracks} />
+                </article>
+                <article role="tabpanel" id="tab-grid" hidden={activeTab !== 'grid'}>
+                  <Grid username={username} />
                 </article>
               </section>
             </div>
@@ -133,6 +158,9 @@ const App = () => {
         
         <Timer 
           position={windowPositions.stalkingTimer}
+          username={username}
+          isListening={isListening}
+          isLoading={isLoading}
           onPositionChange={(x, y) => updateWindowPosition('stalkingTimer', x, y)}
         />
       </div>
