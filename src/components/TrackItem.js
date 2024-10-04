@@ -16,6 +16,25 @@ const TrackItem = ({ track, index }) => {
     }
   }, []);
 
+  // Function to get the most appropriate image size
+  const getOptimalImageUrl = (images) => {
+    if (!images || images.length === 0) return null;
+    
+    // Find the smallest image that's at least 30x30
+    // If none are big enough, use the largest available
+    const optimalImage = images.reduce((best, current) => {
+      const size = parseInt(current.size, 10) || 0;
+      if (size >= 30 && (best.size < 30 || size < best.size)) {
+        return { size, url: current['#text'] };
+      }
+      return best.size > size ? best : { size, url: current['#text'] };
+    }, { size: 0, url: null });
+
+    return optimalImage.url;
+  };
+
+  const imageUrl = getOptimalImageUrl(track.image);
+
   return (
     <li className="track-item" data-index={index}>
       <span 
@@ -29,9 +48,9 @@ const TrackItem = ({ track, index }) => {
         {track.name}
       </span>
       {" - "}{track.artist['#text']}
-      {isHovering && track.image && track.image.length > 0 && (
+      {isHovering && imageUrl && (
         <img 
-          src={track.image[2]['#text']} 
+          src={imageUrl}
           alt={`${track.name} cover`} 
           className="track-cover"
           style={{
