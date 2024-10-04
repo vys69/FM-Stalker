@@ -125,3 +125,25 @@
   .recent-tracks .tree-view li:last-child {
     border-bottom: none;
   }
+
+
+  .track-item {
+    position: relative;
+    cursor: none; /* Hide the default cursor */
+  }
+  
+  .track-text {
+    position: relative;
+    z-index: 1;
+  }
+
+  .track-cover {
+    position: absolute;
+    width: 50px; /* Adjust size as needed */
+    height: 50px;
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+    pointer-events: none;
+    transform: translate(-50%, -50%); /* Center the image on the cursor */
+  }
