@@ -12,7 +12,7 @@ import './custom-xp.css';
 import './xp-taskbar.css';
 
 const App = () => {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState('vyzss');
   const [currentTrack, setCurrentTrack] = useState(null);
   const [recentTracks, setRecentTracks] = useState([]);
   const [error, setError] = useState(null);
