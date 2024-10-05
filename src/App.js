@@ -34,7 +34,7 @@ const App = () => {
     return saved ? JSON.parse(saved) : {
       lastfmPlayer: { x: 30, y: 22 },
       stalkingTimer: { x: 30, y: 484.61 },
-      searchWindow: { x: 30, y: 594 },
+      searchWindow: { x: 30, y: 606 },
     };
   });
 
