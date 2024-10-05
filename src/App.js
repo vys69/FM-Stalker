@@ -32,9 +32,9 @@ const App = () => {
   const [windowPositions, setWindowPositions] = useState(() => {
     const saved = localStorage.getItem('windowPositions');
     return saved ? JSON.parse(saved) : {
-      lastfmPlayer: { x: 50, y: 50 },
-      stalkingTimer: { x: window.innerWidth - 250, y: 50 },
-      searchWindow: { x: window.innerWidth - 350, y: window.innerHeight - 250 },
+      lastfmPlayer: { x: 65, y: 246 },
+      stalkingTimer: { x: 63, y: 716 },
+      searchWindow: { x: 66, y: 115 },
     };
   });
 
