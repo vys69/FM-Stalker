@@ -54,7 +54,8 @@ const TrackItem = ({ track, index }) => {
           className="track-cover"
           style={{
             left: `${mousePosition.x}px`,
-            top: `${mousePosition.y}px`
+            top: `${mousePosition.y}px`,
+            position: 'absolute'
           }}
         />
       )}
