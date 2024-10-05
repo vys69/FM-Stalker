@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, memo, useRef } from 'react';
-import { ToastProvider } from './contexts/ToastContext';
+import { ToastProvider, useToast } from './contexts/ToastContext';
 import Draggable from 'react-draggable';
 import XPTaskbar from './components/XPTaskbar';
 import RecentTracks from './components/RecentTracks';
@@ -13,7 +13,8 @@ import './custom-xp.css';
 import './xp-taskbar.css';
 import SearchWindow from './components/SearchWindow';
 
-const App = () => {
+const AppContent = () => {
+  const { showToast } = useToast();
   const [username, setUsername] = useState(() => {
     const savedUsername = localStorage.getItem('lastfm_username');
     const urlParams = new URLSearchParams(window.location.search);
@@ -82,17 +83,17 @@ const App = () => {
 
     } catch (err) {
       console.error('Error fetching data:', err);
-      setError('Error fetching data. Please try again.');
+      showToast('Error fetching data. Please try again.', 'error');
     } finally {
       setIsLoading(false);
     }
-  }, [username]);
+  }, [username, showToast]);
 
   const [resetTimer, setResetTimer] = useState(false);
 
   const handleSearch = useCallback(async (searchedUsername) => {
     if (searchedUsername.length > 50) {
-      setError('Username is too long!');
+      showToast('Username is too long!', 'error');
       return;
     }
 
@@ -121,11 +122,11 @@ const App = () => {
 
     } catch (err) {
       console.error('Error searching user:', err);
-      setError("User doesn't exist");
+      showToast("User doesn't exist", 'error');
     } finally {
       setIsLoading(false);
     }
-  }, [handleMusicRefresh]);
+  }, [handleMusicRefresh, showToast]);
 
   useEffect(() => {
     handleMusicRefresh();
@@ -153,85 +154,91 @@ const App = () => {
   const searchWindowRef = useRef(null);
 
   return (
-    <ToastProvider>
-      <div className="app-container">
-        <div className="content" style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
-          <Draggable
-            bounds="parent"
-            handle=".title-bar"
-            position={windowPositions.lastfmPlayer}
-            onStop={(e, data) => updateWindowPosition('lastfmPlayer', data.x, data.y)}
-            nodeRef={lastfmPlayerRef}
-          >
-            <div ref={lastfmPlayerRef} className="window" style={{ width: '315px', height: '450px', position: 'absolute' }}>
-              <div className="title-bar">
-                <div className="title-bar-text">Last.fm Player</div>
-                <div className="title-bar-controls">
-                  <button aria-label="Minimize"></button>
-                  <button aria-label="Maximize"></button>
-                  <button aria-label="Close"></button>
-                </div>
-              </div>
-              <div className="window-body scrollable-content">
-                <section className="tabs">
-                  <menu role="tablist" aria-label="Last.fm Tabs">
-                    <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'nowPlaying'} aria-controls="tab-nowPlaying" onClick={() => setActiveTab('nowPlaying')}>Now Playing</button>
-                    <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'recentTracks'} aria-controls="tab-recentTracks" onClick={() => setActiveTab('recentTracks')}>Recent Tracks</button>
-                    <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'userStats'} aria-controls="tab-userStats" onClick={() => setActiveTab('userStats')}>User Stats</button>
-                    <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'grid'} aria-controls="tab-grid" onClick={() => setActiveTab('grid')}>Grid</button>
-                  </menu>
-                  <article role="tabpanel" id="tab-nowPlaying" hidden={activeTab !== 'nowPlaying'}>
-                    <NowPlaying currentTrack={currentTrack} username={username} error={error} onRefresh={handleMusicRefresh} isListening={isListening} isLoading={isLoading} />
-                  </article>
-                  <article role="tabpanel" id="tab-recentTracks" hidden={activeTab !== 'recentTracks'}>
-                    <RecentTracks tracks={recentTracks} isLoading={isLoading} />
-                  </article>
-                  <article role="tabpanel" id="tab-userStats" hidden={activeTab !== 'userStats'}>
-                    <UserStats stats={userStats} error={error} username={username} topAlbums={topAlbums} topArtists={topArtists} topTracks={topTracks} isLoading={isLoading} />
-                  </article>
-                  <article role="tabpanel" id="tab-grid" hidden={activeTab !== 'grid'}>
-                    <Grid username={username} isUserLoading={isLoading} />
-                  </article>
-                </section>
+    <div className="app-container">
+      <div className="content" style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+        <Draggable
+          bounds="parent"
+          handle=".title-bar"
+          position={windowPositions.lastfmPlayer}
+          onStop={(e, data) => updateWindowPosition('lastfmPlayer', data.x, data.y)}
+          nodeRef={lastfmPlayerRef}
+        >
+          <div ref={lastfmPlayerRef} className="window" style={{ width: '315px', height: '450px', position: 'absolute' }}>
+            <div className="title-bar">
+              <div className="title-bar-text">Last.fm Player</div>
+              <div className="title-bar-controls">
+                <button aria-label="Minimize"></button>
+                <button aria-label="Maximize"></button>
+                <button aria-label="Close"></button>
               </div>
             </div>
-          </Draggable>
-
-          <Draggable
-            bounds="parent"
-            handle=".title-bar"
-            defaultPosition={windowPositions.searchWindow}
-            onStop={(e, data) => updateWindowPosition('searchWindow', data.x, data.y)}
-            nodeRef={searchWindowRef}
-          >
-            <div ref={searchWindowRef} style={{ position: 'absolute' }}>
-              <SearchWindow
-                onSearch={handleSearch}
-                initialUsername={username}
-                isLoading={isLoading}
-                currentUsername={username}
-              />
+            <div className="window-body scrollable-content">
+              <section className="tabs">
+                <menu role="tablist" aria-label="Last.fm Tabs">
+                  <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'nowPlaying'} aria-controls="tab-nowPlaying" onClick={() => setActiveTab('nowPlaying')}>Now Playing</button>
+                  <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'recentTracks'} aria-controls="tab-recentTracks" onClick={() => setActiveTab('recentTracks')}>Recent Tracks</button>
+                  <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'userStats'} aria-controls="tab-userStats" onClick={() => setActiveTab('userStats')}>User Stats</button>
+                  <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'grid'} aria-controls="tab-grid" onClick={() => setActiveTab('grid')}>Grid</button>
+                </menu>
+                <article role="tabpanel" id="tab-nowPlaying" hidden={activeTab !== 'nowPlaying'}>
+                  <NowPlaying currentTrack={currentTrack} username={username} error={error} onRefresh={handleMusicRefresh} isListening={isListening} isLoading={isLoading} />
+                </article>
+                <article role="tabpanel" id="tab-recentTracks" hidden={activeTab !== 'recentTracks'}>
+                  <RecentTracks tracks={recentTracks} isLoading={isLoading} />
+                </article>
+                <article role="tabpanel" id="tab-userStats" hidden={activeTab !== 'userStats'}>
+                  <UserStats stats={userStats} error={error} username={username} topAlbums={topAlbums} topArtists={topArtists} topTracks={topTracks} isLoading={isLoading} />
+                </article>
+                <article role="tabpanel" id="tab-grid" hidden={activeTab !== 'grid'}>
+                  <Grid username={username} isUserLoading={isLoading} />
+                </article>
+              </section>
             </div>
-          </Draggable>
+          </div>
+        </Draggable>
 
-          <Timer
-            position={windowPositions.stalkingTimer}
-            username={username}
-            isListening={isListening}
-            isLoading={isLoading}
-            onPositionChange={(x, y) => updateWindowPosition('stalkingTimer', x, y)}
-            resetTimer={resetTimer}
-          />
-        </div>
-        <XPTaskbar />
-        <MessageBox
-          message={messageBox.message}
-          isVisible={messageBox.isVisible}
-          onClose={closeMessageBox}
+        <Draggable
+          bounds="parent"
+          handle=".title-bar"
+          defaultPosition={windowPositions.searchWindow}
+          onStop={(e, data) => updateWindowPosition('searchWindow', data.x, data.y)}
+          nodeRef={searchWindowRef}
+        >
+          <div ref={searchWindowRef} style={{ position: 'absolute' }}>
+            <SearchWindow
+              onSearch={handleSearch}
+              initialUsername={username}
+              isLoading={isLoading}
+              currentUsername={username}
+            />
+          </div>
+        </Draggable>
+
+        <Timer
+          position={windowPositions.stalkingTimer}
+          username={username}
+          isListening={isListening}
+          isLoading={isLoading}
+          onPositionChange={(x, y) => updateWindowPosition('stalkingTimer', x, y)}
+          resetTimer={resetTimer}
         />
       </div>
+      <XPTaskbar />
+      <MessageBox
+        message={messageBox.message}
+        isVisible={messageBox.isVisible}
+        onClose={closeMessageBox}
+      />
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    <ToastProvider>
+      <AppContent />
     </ToastProvider>
   );
 };
 
-export default App;
+export default memo(App);
