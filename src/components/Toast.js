@@ -9,7 +9,7 @@ const Toast = ({ message, type, onClose, id, index }) => {
       case 'warning':
         return '🤓☝️ whoa buddy!';
       case 'error':
-        return '🤓☝️ ERRR! watch it buster!';
+        return '🤓☝️ watch it buster!';
       default:
         return '🤓☝️';
     }
