@@ -1,0 +1,53 @@
+import React, { useState } from 'react';
+import { fetchUserStats } from '../utils/api';
+
+const SearchWindow = ({ onSearch, initialUsername }) => {
+    const [username, setUsername] = useState(initialUsername || '');
+    const [error, setError] = useState('');
+
+    const handleSearch = async () => {
+        if (username.length > 50) {
+            setError('Username is too long!');
+            return;
+        }
+        setError('');
+        try {
+            await fetchUserStats(username);
+            onSearch(username);
+        } catch (error) {
+            setError("User doesn't exist");
+        }
+    };
+
+    return (
+        <div className="window" style={{ width: '200px' }}>
+            <div className="title-bar">
+                <div className="title-bar-text">Search</div>
+                <div className="title-bar-controls">
+                    <button aria-label="Minimize"></button>
+                    <button aria-label="Maximize"></button>
+                    <button aria-label="Close"></button>
+                </div>
+            </div>
+            <div className="window-body">
+                <div className="search-container">
+                    <div className="searchForm">
+                        <input 
+                            type="text" 
+                            id="searchBox" 
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                        <label htmlFor="searchBox">
+                            Search users
+                        </label>
+                    </div>
+                    <button onClick={handleSearch}>Search</button>
+                    {error && <p className="error-message">{error}</p>}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default SearchWindow;
