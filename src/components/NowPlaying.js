@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 const NowPlaying = ({ currentTrack, username, error, onRefresh, isListening, isLoading }) => {
   const [isFading, setIsFading] = useState(false);
+  const [loadedImageUrl, setLoadedImageUrl] = useState(null);
+  const placeholderImage = "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png";
 
   useEffect(() => {
     if (!isLoading) {
@@ -10,18 +12,21 @@ const NowPlaying = ({ currentTrack, username, error, onRefresh, isListening, isL
   }, [isLoading]);
 
   useEffect(() => {
-    // Set up an interval to refresh every minute (60000 milliseconds)
     const intervalId = setInterval(() => {
       onRefresh();
     }, 60000);
 
-    // Clean up the interval when the component unmounts
     return () => clearInterval(intervalId);
-  }, [onRefresh]); // Add onRefresh to the dependency array
+  }, [onRefresh]);
 
   const handleRefresh = () => {
     setIsFading(true);
     onRefresh();
+  };
+
+  const handleImageLoad = (loadedUrl) => {
+    setLoadedImageUrl(loadedUrl);
+    setIsFading(false);
   };
 
   if (error) {
@@ -41,19 +46,25 @@ const NowPlaying = ({ currentTrack, username, error, onRefresh, isListening, isL
 
   return (
     <div className="now-playing">
-      {!albumArt && (
-        <div style={{ width: '100%', maxWidth: '300px' }}>
-          <img style={{ width: '100%', maxWidth: '300px' }} src="https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png"></img>
-        </div>
-      )}
-      {albumArt && (
+      <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
         <img 
-          src={albumArt || 'default-album-art.jpg'} 
-          alt={`${currentTrack?.name || 'Unknown'} album art`} 
+          src={loadedImageUrl || placeholderImage}
+          alt={loadedImageUrl ? `${currentTrack?.name || 'Unknown'} album art` : "Placeholder"}
           className={`np-image ${isFading ? 'fading' : ''}`}
-          style={{ width: '100%', maxWidth: '300px' }}
+          style={{ 
+            width: '100%', 
+            maxWidth: '300px',
+          }}
         />
-      )}
+        {albumArt && albumArt !== loadedImageUrl && (
+          <img 
+            src={albumArt}
+            alt={`${currentTrack?.name || 'Unknown'} album art`}
+            style={{ display: 'none' }}
+            onLoad={() => handleImageLoad(albumArt)}
+          />
+        )}
+      </div>
       <p><strong>{currentTrack?.name || 'Unknown'}</strong></p>
       <p>{currentTrack?.artist['#text'] || 'Unknown Artist'}</p>
       <button onClick={handleRefresh} disabled={isLoading}>Refresh</button>
