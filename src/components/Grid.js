@@ -16,7 +16,6 @@ const Grid = ({ username, isUserLoading }) => {
 
   useEffect(() => {
     if (isUserLoading) {
-      setLoadedImageUrl(null);
       setError(null);
     }
   }, [isUserLoading]);
@@ -53,12 +52,23 @@ const Grid = ({ username, isUserLoading }) => {
     setIsFading(false);
   };
 
+  const clearGrid = () => {
+    setLoadedImageUrl(null);
+    setIsFading(true);
+    setTimeout(() => setIsFading(false), 500); // Ensure fade effect is visible
+  };
+
   return (
     <div className="grid-container">
       <p>Click the button below to generate a 3x3 grid of your recent listening history.</p>
-      <button onClick={generateGrid} className="generate-grid-btn" disabled={isLoading || isUserLoading}>
-        {isLoading ? 'Generating...' : 'Generate Grid'}
-      </button>
+      <div className="button-container" style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+        <button onClick={generateGrid} className="generate-grid-btn" disabled={isLoading || isUserLoading}>
+          {isLoading ? 'Generating...' : 'Generate Grid'}
+        </button>
+        <button onClick={clearGrid} className="clear-grid-btn" disabled={isLoading || isUserLoading || !loadedImageUrl}>
+          Clear Grid
+        </button>
+      </div>
       <div className="generation-container">
         {error && <p className="error-message">{error}</p>}
         <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
