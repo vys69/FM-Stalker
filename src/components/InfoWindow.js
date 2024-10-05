@@ -1,10 +1,17 @@
 import React from 'react';
 import Draggable from 'react-draggable';
+import { motion } from 'framer-motion';
 
 const InfoWindow = ({ onClose }) => {
   return (
     <Draggable handle=".title-bar">
-      <div className="window" style={{ position: 'absolute', bottom: '40px', right: '10px', width: '250px' }}>
+      <motion.div 
+        className="window" 
+        style={{ position: 'absolute', bottom: '40px', right: '10px', width: '250px' }}
+        initial={{ opacity: 0, y: 50, scale: 0.3 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+      >
         <div className="title-bar">
           <div className="title-bar-text">Info</div>
           <div className="title-bar-controls">
@@ -20,7 +27,7 @@ const InfoWindow = ({ onClose }) => {
             <a href="https://twitter.com/fuckgrimlabs" target="_blank" rel="noopener noreferrer">Twitter</a>
           </p>
         </div>
-      </div>
+      </motion.div>
     </Draggable>
   );
 };

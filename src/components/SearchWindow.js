@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { fetchUserStats } from '../utils/api';
+import { useToast } from '../contexts/ToastContext';
 
 const SearchWindow = ({ onSearch, initialUsername, isLoading, currentUsername }) => {
     const [username, setUsername] = useState(initialUsername || '');
-    const [error, setError] = useState('');
+    const { showToast } = useToast();
 
     useEffect(() => {
         if (initialUsername) {
@@ -11,35 +12,21 @@ const SearchWindow = ({ onSearch, initialUsername, isLoading, currentUsername })
         }
     }, [initialUsername]);
 
-    useEffect(() => {
-        if (error) {
-            const timer = setTimeout(() => {
-                setError('');
-            }, 3000);
-
-            return () => clearTimeout(timer);
-        }
-    }, [error]);
-
     const handleSearch = async () => {
-        // Clear any previous errors
-        setError('');
-
-        // Check if the username is empty
         if (!username.trim()) {
-            setError('Please enter a username');
+            showToast('Please enter a username', 'warning');
             return;
         }
 
         // Check if the username is too long
         if (username.length > 50) {
-            setError('Username is too long!');
+            showToast('Username is too long!', 'error');
             return;
         }
 
         // Check if the searched username is the same as the current one
         if (currentUsername && username.trim().toLowerCase() === currentUsername.trim().toLowerCase()) {
-            setError('This user is already loaded!');
+            showToast('This user is already loaded!', 'warning');
             return;
         }
 
@@ -47,7 +34,7 @@ const SearchWindow = ({ onSearch, initialUsername, isLoading, currentUsername })
             await fetchUserStats(username);
             onSearch(username);
         } catch (error) {
-            setError("User doesn't exist");
+            showToast("User doesn't exist", 'error');
         }
     };
 
@@ -76,7 +63,6 @@ const SearchWindow = ({ onSearch, initialUsername, isLoading, currentUsername })
                         </label>
                     </div>
                     <button onClick={handleSearch} disabled={isLoading}>Search</button>
-                    {error && <p className="error-message">{error}</p>}
                 </div>
             </div>
         </div>

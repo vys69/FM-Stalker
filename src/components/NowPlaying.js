@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../contexts/ToastContext';
 
 const NowPlaying = ({ currentTrack, username, error, onRefresh, isListening, isLoading }) => {
   const [isFading, setIsFading] = useState(false);
   const [loadedImageUrl, setLoadedImageUrl] = useState(null);
   const placeholderImage = "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png";
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (!isLoading) {
@@ -13,15 +15,21 @@ const NowPlaying = ({ currentTrack, username, error, onRefresh, isListening, isL
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      onRefresh();
+      handleRefresh();
     }, 60000);
 
     return () => clearInterval(intervalId);
-  }, [onRefresh]);
+  }, []);
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsFading(true);
-    onRefresh();
+    try {
+      await onRefresh();
+      showToast('Music refreshed successfully!', 'info');
+    } catch (error) {
+      console.error('Error refreshing music:', error);
+      showToast('Failed to refresh music. Please try again.', 'error');
+    }
   };
 
   const handleImageLoad = (loadedUrl) => {
