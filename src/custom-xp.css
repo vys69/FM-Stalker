@@ -147,3 +147,15 @@
     pointer-events: none;
     transform: translate(-50%, -50%); /* Center the image on the cursor */
   }
+
+  .searchForm {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.search-container{
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
