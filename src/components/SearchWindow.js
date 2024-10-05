@@ -11,6 +11,16 @@ const SearchWindow = ({ onSearch, initialUsername, isLoading, currentUsername })
         }
     }, [initialUsername]);
 
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => {
+                setError('');
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
+
     const handleSearch = async () => {
         // Clear any previous errors
         setError('');
