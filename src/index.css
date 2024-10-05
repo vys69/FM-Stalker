@@ -140,3 +140,23 @@ img.loading-gif.fading {
   box-shadow: unset;
   padding: 0 12px 3px;
 }
+
+.scrollable-content {
+  height: calc(100% - 50px); /* Adjust if needed to account for the title bar */
+  overflow-y: hidden;
+}
+
+.scrollable-content .tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollable-content menu[role="tablist"] {
+  flex-shrink: 0;
+}
+
+.scrollable-content article[role="tabpanel"] {
+  flex-grow: 1;
+  overflow-y: auto;
+}

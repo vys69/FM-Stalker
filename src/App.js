@@ -161,7 +161,7 @@ const App = () => {
           onStop={(e, data) => updateWindowPosition('lastfmPlayer', data.x, data.y)}
           nodeRef={lastfmPlayerRef}
         >
-          <div ref={lastfmPlayerRef} className="window" style={{ width: '315px', position: 'absolute' }}>
+          <div ref={lastfmPlayerRef} className="window" style={{ width: '315px', height: '450px', position: 'absolute' }}>
             <div className="title-bar">
               <div className="title-bar-text">Last.fm Player</div>
               <div className="title-bar-controls">
@@ -170,7 +170,7 @@ const App = () => {
                 <button aria-label="Close"></button>
               </div>
             </div>
-            <div className="window-body">
+            <div className="window-body scrollable-content">
               <section className="tabs">
                 <menu role="tablist" aria-label="Last.fm Tabs">
                   <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'nowPlaying'} aria-controls="tab-nowPlaying" onClick={() => setActiveTab('nowPlaying')}>Now Playing</button>

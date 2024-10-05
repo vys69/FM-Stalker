@@ -58,7 +58,6 @@ const Grid = ({ username, isUserLoading }) => {
       </button>
       <div className="generation-container">
         {error && <p className="error-message">{error}</p>}
-        {isLoading && <img style={{ width: '100%', maxWidth: '300px' }} src={loadingGif} alt="Loading..." className={`loading-gif ${isFading ? 'fading' : ''}`} />}
         {!gridImage && !isLoading && (
           <div style={{ width: '100%', maxWidth: '300px' }}>
             <img style={{ width: '100%', maxWidth: '300px' }} src="https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png"></img>

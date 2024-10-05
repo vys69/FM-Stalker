@@ -3,12 +3,12 @@ import { useHover } from '../hooks/useHover';
 
 const TrackItem = ({ track, index }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const trackNameRef = useRef(null);
+  const trackItemRef = useRef(null);
   const [hoverRef, isHovering] = useHover();
 
   const handleMouseMove = useCallback((event) => {
-    if (trackNameRef.current) {
-      const rect = trackNameRef.current.getBoundingClientRect();
+    if (trackItemRef.current) {
+      const rect = trackItemRef.current.getBoundingClientRect();
       setMousePosition({
         x: event.clientX - rect.left,
         y: event.clientY - rect.top
@@ -36,17 +36,16 @@ const TrackItem = ({ track, index }) => {
   const imageUrl = getOptimalImageUrl(track.image);
 
   return (
-    <li className="track-item" data-index={index}>
-      <span 
-        ref={(el) => {
-          trackNameRef.current = el;
-          hoverRef.current = el;
-        }}
-        className="track-name"
-        onMouseMove={handleMouseMove}
-      >
-        {track.name}
-      </span>
+    <li 
+      className="track-item" 
+      data-index={index}
+      ref={(el) => {
+        trackItemRef.current = el;
+        hoverRef.current = el;
+      }}
+      onMouseMove={handleMouseMove}
+    >
+      <span className="track-name">{track.name}</span>
       {" - "}{track.artist['#text']}
       {isHovering && imageUrl && (
         <img 

@@ -2,9 +2,9 @@ import React from 'react';
 
 const UserStats = ({ stats, username, topAlbums, topArtists, topTracks }) => {
   return (
-    <div>
+    <div> 
       {stats && (
-        <div>
+        <div style={{ overflow: 'scroll' }}>
           <p>Username: {username}</p>
           <p>Average songs per day: {Number((stats.playcount / stats.registered.unixtime * 86400).toFixed(2))}</p>
           <p>Total scrobbles: {stats.playcount}</p>
