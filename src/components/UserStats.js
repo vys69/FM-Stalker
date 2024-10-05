@@ -4,7 +4,7 @@ const UserStats = ({ stats, username, topAlbums, topArtists, topTracks }) => {
   return (
     <div> 
       {stats && (
-        <div style={{ overflow: 'scroll' }}>
+        <div>
           <p>Username: {username}</p>
           <p>Average songs per day: {Number((stats.playcount / stats.registered.unixtime * 86400).toFixed(2))}</p>
           <p>Total scrobbles: {stats.playcount}</p>

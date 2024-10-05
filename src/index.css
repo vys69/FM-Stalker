@@ -160,3 +160,8 @@ img.loading-gif.fading {
   flex-grow: 1;
   overflow-y: auto;
 }
+
+.scrollable-content article[role="tabpanel"]#tab-grid,
+.scrollable-content article[role="tabpanel"]#tab-recentTracks {
+  overflow-y: hidden;
+}
