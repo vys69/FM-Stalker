@@ -10,9 +10,15 @@ import Grid from './components/Grid';  // Import the new Grid component
 import { fetchLastFmData, fetchUserStats, fetchTopAlbums, fetchTopArtists, fetchTopTracks } from './utils/api';
 import './custom-xp.css';
 import './xp-taskbar.css';
+import SearchWindow from './components/SearchWindow';
 
 const App = () => {
-  const [username, setUsername] = useState('vyzss');
+  const [username, setUsername] = useState(() => {
+    const savedUsername = localStorage.getItem('lastfm_username');
+    const urlParams = new URLSearchParams(window.location.search);
+    return savedUsername || urlParams.get('username') || 'vyzss';
+  });
+
   const [currentTrack, setCurrentTrack] = useState(null);
   const [recentTracks, setRecentTracks] = useState([]);
   const [error, setError] = useState(null);
@@ -20,7 +26,7 @@ const App = () => {
   const [messageBox, setMessageBox] = useState({ isVisible: false, message: '' });
   const [userStats, setUserStats] = useState(null);
   const [isListening, setIsListening] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [musicRefreshCount, setMusicRefreshCount] = useState(0);
 
   const [windowPositions, setWindowPositions] = useState(() => {
@@ -28,6 +34,7 @@ const App = () => {
     return saved ? JSON.parse(saved) : {
       lastfmPlayer: { x: 50, y: 50 },
       stalkingTimer: { x: window.innerWidth - 250, y: 50 },
+      searchWindow: { x: window.innerWidth - 350, y: window.innerHeight - 250 },
     };
   });
 
@@ -35,15 +42,24 @@ const App = () => {
   const [topArtists, setTopArtists] = useState([]);
   const [topTracks, setTopTracks] = useState([]);
 
+  const clearAllData = () => {
+    setRecentTracks([]);
+    setCurrentTrack(null);
+    setIsListening(false);
+    setUserStats(null);
+    setTopAlbums([]);
+    setTopArtists([]);
+    setTopTracks([]);
+  };
+
   const handleMusicRefresh = useCallback(async () => {
-    setMusicRefreshCount(prev => prev + 1);
     if (!username) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const [data, stats, albums, artists, tracks] = await Promise.all([
+      const [recentTracksData, userStatsData, topAlbumsData, topArtistsData, topTracksData] = await Promise.all([
         fetchLastFmData(username),
         fetchUserStats(username),
         fetchTopAlbums(username),
@@ -51,30 +67,18 @@ const App = () => {
         fetchTopTracks(username)
       ]);
 
-      if (data.recenttracks && data.recenttracks.track.length > 0) {
-        const tracks = data.recenttracks.track;
-        setRecentTracks(tracks.slice(0, 10));
-        
-        const lastTrack = tracks[0];
-        const lastPlayedTime = new Date(lastTrack.date?.uts * 1000 || Date.now());
-        const isCurrentlyListening = (Date.now() - lastPlayedTime) < 3600000;
-        setIsListening(isCurrentlyListening);
+      // Process and set state for each data type
+      setRecentTracks(recentTracksData.recenttracks.track);
+      setUserStats(userStatsData);
+      setTopAlbums(topAlbumsData);
+      setTopArtists(topArtistsData);
+      setTopTracks(topTracksData);
 
-        if (isCurrentlyListening) {
-          setCurrentTrack(lastTrack);
-        } else {
-          setCurrentTrack(null);
-        }
-      } else {
-        setCurrentTrack(null);
-        setIsListening(false);
-        setRecentTracks([]);
-      }
+      // Update current track and listening status
+      const currentTrack = recentTracksData.recenttracks.track[0];
+      setCurrentTrack(currentTrack);
+      setIsListening(currentTrack['@attr']?.nowplaying === 'true');
 
-      setUserStats(stats);
-      setTopAlbums(albums);
-      setTopArtists(artists);
-      setTopTracks(tracks);
     } catch (err) {
       console.error('Error fetching data:', err);
       setError('Error fetching data. Please try again.');
@@ -83,46 +87,70 @@ const App = () => {
     }
   }, [username]);
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlUsername = urlParams.get('username');
-    if (urlUsername) {
-      setUsername(urlUsername);
+  const handleSearch = useCallback(async (searchedUsername) => {
+    if (searchedUsername.length > 50) {
+      setError('Username is too long!');
+      return;
     }
-  }, []);
+
+    setIsLoading(true);
+    setError(null);
+    clearAllData(); // Clear all data immediately
+
+    try {
+      // Attempt to fetch user data to validate the username
+      await fetchUserStats(searchedUsername);
+
+      // If successful, update username and trigger full refresh
+      setUsername(searchedUsername);
+      localStorage.setItem('lastfm_username', searchedUsername);
+      
+      // Update URL
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set('username', searchedUsername);
+      window.history.pushState({}, '', newUrl);
+
+      // Trigger full data refresh
+      await handleMusicRefresh();
+
+    } catch (err) {
+      console.error('Error searching user:', err);
+      setError("User doesn't exist");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [handleMusicRefresh]);
 
   useEffect(() => {
-    if (username) {
-      handleMusicRefresh();
-    }
-  }, [username, handleMusicRefresh]);
+    handleMusicRefresh();
+  }, [handleMusicRefresh]);
 
   const closeMessageBox = useCallback(() => {
     setMessageBox({ isVisible: false, message: '' });
   }, []);
 
   const updateWindowPosition = useCallback((windowName, x, y) => {
-    const newPositions = {
-      ...windowPositions,
-      [windowName]: { x, y }
-    };
-    setWindowPositions(newPositions);
-    localStorage.setItem('windowPositions', JSON.stringify(newPositions));
-  }, [windowPositions]);
+    setWindowPositions(prev => {
+      const newPositions = { ...prev, [windowName]: { x, y } };
+      localStorage.setItem('windowPositions', JSON.stringify(newPositions));
+      return newPositions;
+    });
+  }, []);
 
-  const draggableRef = useRef(null);
+  const lastfmPlayerRef = useRef(null);
+  const searchWindowRef = useRef(null);
 
   return (
     <div className="app-container">
-      <div className="content">
+      <div className="content" style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
         <Draggable
           bounds="parent"
           handle=".title-bar"
           position={windowPositions.lastfmPlayer}
           onStop={(e, data) => updateWindowPosition('lastfmPlayer', data.x, data.y)}
-          nodeRef={draggableRef}
+          nodeRef={lastfmPlayerRef}
         >
-          <div ref={draggableRef} className="window" style={{ width: '315px', position: 'absolute' }}>
+          <div ref={lastfmPlayerRef} className="window" style={{ width: '315px', position: 'absolute' }}>
             <div className="title-bar">
               <div className="title-bar-text">Last.fm Player</div>
               <div className="title-bar-controls">
@@ -140,19 +168,31 @@ const App = () => {
                   <button role="tab" aria-selected={activeTab === 'grid'} aria-controls="tab-grid" onClick={() => setActiveTab('grid')}>Grid</button>
                 </menu>
                 <article role="tabpanel" id="tab-nowPlaying" hidden={activeTab !== 'nowPlaying'}>
-                  <NowPlaying currentTrack={currentTrack} username={username} error={error} onRefresh={handleMusicRefresh} isListening={isListening} />
+                  <NowPlaying currentTrack={currentTrack} username={username} error={error} onRefresh={handleMusicRefresh} isListening={isListening} isLoading={isLoading} />
                 </article>
                 <article role="tabpanel" id="tab-recentTracks" hidden={activeTab !== 'recentTracks'}>
-                  <RecentTracks tracks={recentTracks} />
+                  <RecentTracks tracks={recentTracks} isLoading={isLoading} />
                 </article>
                 <article role="tabpanel" id="tab-userStats" hidden={activeTab !== 'userStats'}>
-                  <UserStats stats={userStats} error={error} username={username} topAlbums={topAlbums} topArtists={topArtists} topTracks={topTracks} />
+                  <UserStats stats={userStats} error={error} username={username} topAlbums={topAlbums} topArtists={topArtists} topTracks={topTracks} isLoading={isLoading} />
                 </article>
                 <article role="tabpanel" id="tab-grid" hidden={activeTab !== 'grid'}>
                   <Grid username={username} />
                 </article>
               </section>
             </div>
+          </div>
+        </Draggable>
+        
+        <Draggable
+          bounds="parent"
+          handle=".title-bar"
+          defaultPosition={windowPositions.searchWindow}
+          onStop={(e, data) => updateWindowPosition('searchWindow', data.x, data.y)}
+          nodeRef={searchWindowRef}
+        >
+          <div ref={searchWindowRef} style={{ position: 'absolute' }}>
+            <SearchWindow onSearch={handleSearch} initialUsername={username} />
           </div>
         </Draggable>
         
