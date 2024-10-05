@@ -86,7 +86,7 @@ span.playcount {
   position: relative;
 }
 
-.fading.grid-image{
+.fading.grid-image {
   opacity: 50%;
   filter: blur(3px);
   transition: opacity 0.5s, filter 0.5s;
@@ -104,4 +104,39 @@ img.loading-gif.fading {
   top: 0;
   bottom: 0;
   right: 0;
+}
+
+.title-bar-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fading.np-image {
+  filter: blur(2px);
+  opacity: 80%;
+  transition: filter 0.5s, opacity 0.5s;
+}
+
+.np-image:not(.fading) {
+  filter: blur(0px);
+  opacity: 100%;
+  transition: filter 0.5s, opacity 0.5s;
+}
+
+.tab-button:disabled {
+  opacity: 90%;
+  cursor: not-allowed;
+}
+
+.tab-button:disabled:hover {
+  background: linear-gradient(180deg, #fff, #fafaf9 26%, #f0f0ea 95%, #ecebe5);
+  margin-left: -1px;
+  margin-right: 2px;
+  border-radius: 0;
+  border-color: #91a7b4;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  border-top: 1px solid #91a7b4;
+  box-shadow: unset;
+  padding: 0 12px 3px;
 }

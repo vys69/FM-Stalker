@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Draggable from 'react-draggable';
 import Confetti from 'react-confetti';
 
-const Timer = ({ position, onPositionChange, username, isListening }) => {
+const Timer = ({ position, onPositionChange, username, isListening, isLoading, resetTimer }) => {
   const [time, setTime] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const [bestTime, setBestTime] = useState(() => {
@@ -40,6 +40,14 @@ const Timer = ({ position, onPositionChange, username, isListening }) => {
   useEffect(() => {
     saveBestTime();
   }, [saveBestTime]);
+
+  // Add this useEffect to handle timer reset
+  useEffect(() => {
+    if (resetTimer) {
+      setTime(0);
+      hasStarted.current = false;
+    }
+  }, [resetTimer]);
 
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60000);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import loadingGif from '../output.gif';
 
-const Grid = ({ username }) => {
+const Grid = ({ username, isUserLoading }) => {
   const [gridImage, setGridImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -12,6 +12,13 @@ const Grid = ({ username }) => {
       setIsFading(false);
     }
   }, [isLoading, isFading]);
+
+  useEffect(() => {
+    if (isUserLoading) {
+      setGridImage(null);
+      setError(null);
+    }
+  }, [isUserLoading]);
 
   const generateGrid = async () => {
     if (!username) {
@@ -46,13 +53,18 @@ const Grid = ({ username }) => {
   return (
     <div className="grid-container">
       <p>Click the button below to generate a 3x3 grid of your recent listening history.</p>
-      <button onClick={generateGrid} className="generate-grid-btn" disabled={isLoading}>
+      <button onClick={generateGrid} className="generate-grid-btn" disabled={isLoading || isUserLoading}>
         {isLoading ? 'Generating...' : 'Generate Grid'}
       </button>
       <div className="generation-container">
         {error && <p className="error-message">{error}</p>}
         {isLoading && <img style={{ width: '100%', maxWidth: '300px' }} src={loadingGif} alt="Loading..." className={`loading-gif ${isFading ? 'fading' : ''}`} />}
-        {gridImage && (
+        {!gridImage && !isLoading && (
+          <div style={{ width: '100%', maxWidth: '300px' }}>
+            <img style={{ width: '100%', maxWidth: '300px' }} src="https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png"></img>
+          </div>
+        )}
+        {gridImage && !isUserLoading && (
           <img 
             style={{ width: '100%', maxWidth: '300px' }} 
             src={gridImage} 

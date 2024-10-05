@@ -87,6 +87,8 @@ const App = () => {
     }
   }, [username]);
 
+  const [resetTimer, setResetTimer] = useState(false);
+
   const handleSearch = useCallback(async (searchedUsername) => {
     if (searchedUsername.length > 50) {
       setError('Username is too long!');
@@ -110,6 +112,9 @@ const App = () => {
       newUrl.searchParams.set('username', searchedUsername);
       window.history.pushState({}, '', newUrl);
 
+      // Reset the timer
+      setResetTimer(true);
+
       // Trigger full data refresh
       await handleMusicRefresh();
 
@@ -124,6 +129,12 @@ const App = () => {
   useEffect(() => {
     handleMusicRefresh();
   }, [handleMusicRefresh]);
+
+  useEffect(() => {
+    if (resetTimer) {
+      setResetTimer(false);
+    }
+  }, [resetTimer]);
 
   const closeMessageBox = useCallback(() => {
     setMessageBox({ isVisible: false, message: '' });
@@ -162,10 +173,10 @@ const App = () => {
             <div className="window-body">
               <section className="tabs">
                 <menu role="tablist" aria-label="Last.fm Tabs">
-                  <button role="tab" aria-selected={activeTab === 'nowPlaying'} aria-controls="tab-nowPlaying" onClick={() => setActiveTab('nowPlaying')}>Now Playing</button>
-                  <button role="tab" aria-selected={activeTab === 'recentTracks'} aria-controls="tab-recentTracks" onClick={() => setActiveTab('recentTracks')}>Recent Tracks</button>
-                  <button role="tab" aria-selected={activeTab === 'userStats'} aria-controls="tab-userStats" onClick={() => setActiveTab('userStats')}>User Stats</button>
-                  <button role="tab" aria-selected={activeTab === 'grid'} aria-controls="tab-grid" onClick={() => setActiveTab('grid')}>Grid</button>
+                  <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'nowPlaying'} aria-controls="tab-nowPlaying" onClick={() => setActiveTab('nowPlaying')}>Now Playing</button>
+                  <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'recentTracks'} aria-controls="tab-recentTracks" onClick={() => setActiveTab('recentTracks')}>Recent Tracks</button>
+                  <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'userStats'} aria-controls="tab-userStats" onClick={() => setActiveTab('userStats')}>User Stats</button>
+                  <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'grid'} aria-controls="tab-grid" onClick={() => setActiveTab('grid')}>Grid</button>
                 </menu>
                 <article role="tabpanel" id="tab-nowPlaying" hidden={activeTab !== 'nowPlaying'}>
                   <NowPlaying currentTrack={currentTrack} username={username} error={error} onRefresh={handleMusicRefresh} isListening={isListening} isLoading={isLoading} />
@@ -177,7 +188,7 @@ const App = () => {
                   <UserStats stats={userStats} error={error} username={username} topAlbums={topAlbums} topArtists={topArtists} topTracks={topTracks} isLoading={isLoading} />
                 </article>
                 <article role="tabpanel" id="tab-grid" hidden={activeTab !== 'grid'}>
-                  <Grid username={username} />
+                  <Grid username={username} isUserLoading={isLoading} />
                 </article>
               </section>
             </div>
@@ -192,7 +203,12 @@ const App = () => {
           nodeRef={searchWindowRef}
         >
           <div ref={searchWindowRef} style={{ position: 'absolute' }}>
-            <SearchWindow onSearch={handleSearch} initialUsername={username} />
+            <SearchWindow 
+              onSearch={handleSearch} 
+              initialUsername={username} 
+              isLoading={isLoading}
+              currentUsername={username}
+            />
           </div>
         </Draggable>
         
@@ -202,6 +218,7 @@ const App = () => {
           isListening={isListening}
           isLoading={isLoading}
           onPositionChange={(x, y) => updateWindowPosition('stalkingTimer', x, y)}
+          resetTimer={resetTimer}
         />
       </div>
       <XPTaskbar />
