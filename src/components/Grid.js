@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../contexts/ToastContext';
 import loadingGif from '../output.gif';
 
 const Grid = ({ username, isUserLoading }) => {
   const [loadedImageUrl, setLoadedImageUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [isFading, setIsFading] = useState(false);
+  const { showToast } = useToast();
   const placeholderImage = "https://lastfm.freetls.fastly.net/i/u/174s/2a96cbd8b46e442fc41c2b86b821562f.png";
 
   useEffect(() => {
@@ -14,20 +15,13 @@ const Grid = ({ username, isUserLoading }) => {
     }
   }, [isLoading]);
 
-  useEffect(() => {
-    if (isUserLoading) {
-      setError(null);
-    }
-  }, [isUserLoading]);
-
   const generateGrid = async () => {
     if (!username) {
-      setError('Please enter a username first.');
+      showToast('Please enter a username first.');
       return;
     }
 
     setIsLoading(true);
-    setError(null);
     setIsFading(true);
 
     const url = `https://songstitch.art/collage?username=${username}&method=album&period=7day&artist=true&album=true&playcount=false&rows=3&columns=3&webp=true&cacheid=${Date.now()}`;
@@ -42,7 +36,7 @@ const Grid = ({ username, isUserLoading }) => {
       setLoadedImageUrl(imageUrl);
     } catch (err) {
       console.error('Error fetching grid:', err);
-      setError('Failed to generate grid. Please try again.');
+      showToast('Failed to generate grid. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -55,15 +49,18 @@ const Grid = ({ username, isUserLoading }) => {
   const clearGrid = () => {
     setLoadedImageUrl(null);
     setIsFading(true);
-    setTimeout(() => setIsFading(false), 500); // Ensure fade effect is visible
+    setTimeout(() => setIsFading(false), 500);
   };
+
+  const gridDisabled = () =>{
+    showToast('Grid generation is temporarily disabled.', 'warning');
+  }
 
   return (
     <div className="grid-container">
-        <p>Generating grids is temporarily disabled! </p>
-      {/* <p>Click the button below to generate a 3x3 grid of your recent listening history.</p>
-       <div className="button-container" style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
-        <button onClick={generateGrid} className="generate-grid-btn" disabled={isLoading || isUserLoading}>
+      <p>Click the button below to generate a 3x3 grid of your recent listening history.</p>
+      <div className="button-container" style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+        <button onClick={gridDisabled} className="generate-grid-btn" disabled={isLoading || isUserLoading}>
           {isLoading ? 'Generating...' : 'Generate Grid'}
         </button>
         <button onClick={clearGrid} className="clear-grid-btn" disabled={isLoading || isUserLoading || !loadedImageUrl}>
@@ -71,7 +68,6 @@ const Grid = ({ username, isUserLoading }) => {
         </button>
       </div>
       <div className="generation-container">
-        {error && <p className="error-message">{error}</p>}
         <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
           <img 
             src={loadedImageUrl || placeholderImage}
@@ -92,7 +88,7 @@ const Grid = ({ username, isUserLoading }) => {
             />
           )}
         </div>
-      </div> */}
+      </div>
     </div>
   );
 };

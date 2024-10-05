@@ -165,3 +165,7 @@ img.loading-gif.fading {
 .scrollable-content article[role="tabpanel"]#tab-recentTracks {
   overflow-y: hidden;
 }
+
+.title-bar{
+  cursor: move;
+}
