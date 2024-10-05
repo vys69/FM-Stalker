@@ -60,8 +60,9 @@ const Grid = ({ username, isUserLoading }) => {
 
   return (
     <div className="grid-container">
-      <p>Click the button below to generate a 3x3 grid of your recent listening history.</p>
-      <div className="button-container" style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+        <p>Generating grids is temporarily disabled! </p>
+      {/* <p>Click the button below to generate a 3x3 grid of your recent listening history.</p>
+       <div className="button-container" style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
         <button onClick={generateGrid} className="generate-grid-btn" disabled={isLoading || isUserLoading}>
           {isLoading ? 'Generating...' : 'Generate Grid'}
         </button>
@@ -91,7 +92,7 @@ const Grid = ({ username, isUserLoading }) => {
             />
           )}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
