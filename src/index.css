@@ -124,7 +124,7 @@ img.loading-gif.fading {
 }
 
 .tab-button:disabled {
-  opacity: 90%;
+  opacity: 50%;
   cursor: not-allowed;
 }
 
