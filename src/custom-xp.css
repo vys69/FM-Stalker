@@ -111,6 +111,7 @@
   .recent-tracks {
     max-height: 300px;
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .recent-tracks .tree-view {
@@ -118,7 +119,7 @@
   }
 
   .recent-tracks .tree-view li {
-    padding: 5px 0;
+    padding: 10px 10px;
     border-bottom: 1px solid #dfdfdf;
   }
 
