@@ -12,13 +12,15 @@ import { fetchLastFmData, fetchUserStats, fetchTopAlbums, fetchTopArtists, fetch
 import './custom-xp.css';
 import './xp-taskbar.css';
 import SearchWindow from './components/SearchWindow';
+import SettingsWindow from './components/SettingsWindow';  // Import the new SettingsWindow
 
 const AppContent = () => {
   const { showToast } = useToast();
   const [username, setUsername] = useState(() => {
-    const savedUsername = localStorage.getItem('lastfm_username');
+    // Remove localStorage usage
+    // const savedUsername = localStorage.getItem('lastfm_username');
     const urlParams = new URLSearchParams(window.location.search);
-    return savedUsername || urlParams.get('username') || 'vyzss';
+    return urlParams.get('username') || 'vyzss'; // Default to 'vyzss' if no username in URL
   });
 
   const [currentTrack, setCurrentTrack] = useState(null);
@@ -31,12 +33,27 @@ const AppContent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [musicRefreshCount, setMusicRefreshCount] = useState(0);
 
+  const [settings, setSettings] = useState(() => {
+    const savedSettings = localStorage.getItem('appSettings');
+    return savedSettings ? JSON.parse(savedSettings) : {
+      saveWindowPositions: false,
+      enableTimer: true,
+      windows: {
+        lastfmPlayer: { x: 30, y: 22 },
+        stalkingTimer: { x: 30, y: 484.61 },
+        searchWindow: { x: 30, y: 606 },
+        settingsWindow: { x: 250, y: 22 },
+      }
+    };
+  });
+
   const [windowPositions, setWindowPositions] = useState(() => {
-    const saved = localStorage.getItem('windowPositions');
-    return saved ? JSON.parse(saved) : {
+    const savedPositions = localStorage.getItem('windowPositions');
+    return savedPositions ? JSON.parse(savedPositions) : {
       lastfmPlayer: { x: 30, y: 22 },
       stalkingTimer: { x: 30, y: 484.61 },
       searchWindow: { x: 30, y: 606 },
+      settingsWindow: { x: 250, y: 22 },
     };
   });
 
@@ -56,6 +73,8 @@ const AppContent = () => {
 
   const handleMusicRefresh = useCallback(async () => {
     if (!username) return;
+    console.log('Starting music refresh for:', username);
+    console.log('Refreshing music data for username:', username);  // Add this log
 
     setIsLoading(true);
     setError(null);
@@ -86,6 +105,7 @@ const AppContent = () => {
       showToast('Error fetching data. Please try again.', 'error');
     } finally {
       setIsLoading(false);
+      console.log('Data fetched successfully for:', username);
     }
   }, [username, showToast]);
 
@@ -105,14 +125,18 @@ const AppContent = () => {
       // Attempt to fetch user data to validate the username
       await fetchUserStats(searchedUsername);
 
-      // If successful, update username and trigger full refresh
+      // If successful, update username
       setUsername(searchedUsername);
-      localStorage.setItem('lastfm_username', searchedUsername);
+      
+      // Remove localStorage update
+      // localStorage.setItem('lastfm_username', searchedUsername);
 
       // Update URL
       const newUrl = new URL(window.location);
       newUrl.searchParams.set('username', searchedUsername);
       window.history.pushState({}, '', newUrl);
+
+      console.log('Username updated in URL:', searchedUsername); // Debug log
 
       // Reset the timer
       setResetTimer(true);
@@ -130,6 +154,9 @@ const AppContent = () => {
 
   useEffect(() => {
     handleMusicRefresh();
+    console.log('Effect triggered, current username:', username);
+    // Debug log to check initial username
+    // console.log('Initial username:', username);
   }, [handleMusicRefresh]);
 
   useEffect(() => {
@@ -142,16 +169,39 @@ const AppContent = () => {
     setMessageBox({ isVisible: false, message: '' });
   }, []);
 
-  const updateWindowPosition = useCallback((windowName, x, y) => {
-    setWindowPositions(prev => {
-      const newPositions = { ...prev, [windowName]: { x, y } };
-      localStorage.setItem('windowPositions', JSON.stringify(newPositions));
-      return newPositions;
-    });
-  }, []);
+  const updateWindowPosition = (windowName, x, y) => {
+    setWindowPositions(prev => ({
+      ...prev,
+      [windowName]: { x, y }
+    }));
+  };
+
+  // Save window positions to localStorage only when the setting is enabled
+  useEffect(() => {
+    if (settings.saveWindowPositions) {
+      localStorage.setItem('windowPositions', JSON.stringify(windowPositions));
+    }
+  }, [windowPositions, settings.saveWindowPositions]);
 
   const lastfmPlayerRef = useRef(null);
   const searchWindowRef = useRef(null);
+  const settingsWindowRef = useRef(null);
+
+  const handleSaveSettings = useCallback((newSettings) => {
+    console.log('Parent: handleSaveSettings called with', newSettings);
+    setSettings(newSettings);
+    // Remove any direct calls to showToast from here
+  }, [/* add any dependencies */]);
+
+  // Use this effect to apply settings
+  useEffect(() => {
+    // Apply timer setting
+    if (!settings.enableTimer) {
+      // Stop the timer
+      // You'll need to implement this logic in your Timer component
+    }
+    // Apply other settings as needed
+  }, [settings]);
 
   return (
     <div className="app-container">
@@ -178,6 +228,7 @@ const AppContent = () => {
                   <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'nowPlaying'} aria-controls="tab-nowPlaying" onClick={() => setActiveTab('nowPlaying')}>Now Playing</button>
                   <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'recentTracks'} aria-controls="tab-recentTracks" onClick={() => setActiveTab('recentTracks')}>Recent Tracks</button>
                   <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'userStats'} aria-controls="tab-userStats" onClick={() => setActiveTab('userStats')}>User Stats</button>
+                  <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'globalStats'} aria-controls="tab-globalStats" onClick={() => setActiveTab('globalStats')}>Global Stats</button>
                   <button className="tab-button" disabled={isLoading} role="tab" aria-selected={activeTab === 'grid'} aria-controls="tab-grid" onClick={() => setActiveTab('grid')}>Grid</button>
                 </menu>
                 <article role="tabpanel" id="tab-nowPlaying" hidden={activeTab !== 'nowPlaying'}>
@@ -214,13 +265,29 @@ const AppContent = () => {
           </div>
         </Draggable>
 
+        <Draggable
+          bounds="parent"
+          handle=".title-bar"
+          position={windowPositions.settingsWindow}
+          onStop={(e, data) => updateWindowPosition('settingsWindow', data.x, data.y)}
+          nodeRef={settingsWindowRef}
+        >
+          <div ref={settingsWindowRef} style={{ position: 'absolute' }}>
+            <SettingsWindow
+              onSave={handleSaveSettings}
+              initialSettings={settings}
+              isLoading={isLoading}
+            />
+          </div>
+        </Draggable>
+
         <Timer
           position={windowPositions.stalkingTimer}
           username={username}
           isListening={isListening}
           isLoading={isLoading}
           onPositionChange={(x, y) => updateWindowPosition('stalkingTimer', x, y)}
-          resetTimer={resetTimer}
+          enabled={settings.enableTimer}
         />
       </div>
       <XPTaskbar />

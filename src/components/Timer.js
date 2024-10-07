@@ -2,14 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Draggable from 'react-draggable';
 import Confetti from 'react-confetti';
 
-const Timer = ({ position, onPositionChange, username, isListening, isLoading, resetTimer }) => {
+const Timer = ({ position, onPositionChange, username, isListening, enabled }) => {
   const [time, setTime] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const [bestTime, setBestTime] = useState(() => {
     const saved = localStorage.getItem('bestTime');
     return saved ? parseInt(saved, 10) : 0;
   });
-  const hasStarted = useRef(false);
+  const lastMilestone = useRef(0);
   const timerRef = useRef(null);
   const [timerSize, setTimerSize] = useState({ width: 0, height: 0 });
   const draggableRef = useRef(null);
@@ -21,33 +21,64 @@ const Timer = ({ position, onPositionChange, username, isListening, isLoading, r
     }
   }, [time, bestTime]);
 
+  const updateSize = useCallback(() => {
+    if (timerRef.current) {
+      setTimerSize({
+        width: timerRef.current.offsetWidth,
+        height: timerRef.current.offsetHeight
+      });
+    }
+  }, []);
+
   useEffect(() => {
-    let interval;
-    if (isListening && !hasStarted.current) {
-      hasStarted.current = true;
-    }
-    if (hasStarted.current) {
-      interval = setInterval(() => {
-        setTime(prevTime => prevTime + 10);
-      }, 10);
-    }
+    window.addEventListener('resize', updateSize);
+    updateSize(); // Initial size update
+
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 5000);
+
+    const interval = setInterval(() => {
+      setTime(prevTime => {
+        const newTime = prevTime + 10;
+        const seconds = Math.floor(newTime / 1000);
+        const minutes = Math.floor(seconds / 60);
+        
+        if (seconds <= 64) {
+          if (seconds === 1 || (seconds > 1 && Math.log2(seconds) % 1 === 0)) {
+            setShowConfetti(true);
+            setTimeout(() => setShowConfetti(false), 5000);
+            lastMilestone.current = seconds;
+          }
+        } else {
+          if (minutes === 1 || (minutes > 1 && Math.log2(minutes) % 1 === 0 && minutes !== lastMilestone.current)) {
+            setShowConfetti(true);
+            setTimeout(() => setShowConfetti(false), 5000);
+            lastMilestone.current = minutes;
+          }
+        }
+        
+        return newTime;
+      });
+    }, 10);
+
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+      saveBestTime();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      if (interval) clearInterval(interval);
+      clearInterval(interval);
+      window.removeEventListener('resize', updateSize);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      saveBestTime();
     };
-  }, [isListening]);
+  }, [saveBestTime, updateSize]);
 
   useEffect(() => {
     saveBestTime();
   }, [saveBestTime]);
-
-  // Add this useEffect to handle timer reset
-  useEffect(() => {
-    if (resetTimer) {
-      setTime(0);
-      hasStarted.current = false;
-    }
-  }, [resetTimer]);
 
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60000);
@@ -56,6 +87,10 @@ const Timer = ({ position, onPositionChange, username, isListening, isLoading, r
 
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
   };
+
+  if (!enabled) {
+    return null;
+  }
 
   return (
     <Draggable 
@@ -99,10 +134,10 @@ const Timer = ({ position, onPositionChange, username, isListening, isLoading, r
         </div>
         <div className="window-body">
           <p style={{ textAlign: 'center', fontSize: '1.2em' }}>
-            {!hasStarted.current ? (
-              <img style={{ width: '100%', maxWidth: '300px' }} src={require('../output.gif')} alt="Loading..." />
-            ) : (
+            {isListening ? (
               `You've been stalking ${username} for ${formatTime(time)}`
+            ) : (
+              `${username} isn't listening to any music right now`
             )}
           </p>
           <p style={{ textAlign: 'center', fontSize: '0.9em' }}>

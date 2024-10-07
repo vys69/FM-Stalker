@@ -12,6 +12,11 @@ const SearchWindow = ({ onSearch, initialUsername, isLoading, currentUsername })
         }
     }, [initialUsername]);
 
+    const handleUsernameChange = (e) => {
+        const newUsername = e.target.value;
+        setUsername(newUsername);
+    };
+
     const handleSearch = async () => {
         if (!username.trim()) {
             showToast('Please enter a username', 'warning');
@@ -29,6 +34,8 @@ const SearchWindow = ({ onSearch, initialUsername, isLoading, currentUsername })
             showToast('This user is already loaded!', 'warning');
             return;
         }
+
+        console.log('Searching for username:', username.trim());  // Log the username being searched
 
         try {
             await fetchUserStats(username);
@@ -56,7 +63,7 @@ const SearchWindow = ({ onSearch, initialUsername, isLoading, currentUsername })
                             maxLength={50}
                             id="searchBox" 
                             value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={handleUsernameChange}  // Use the new handler
                         />
                         <label htmlFor="searchBox">
                             Search users

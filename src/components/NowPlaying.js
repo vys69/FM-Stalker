@@ -55,17 +55,17 @@ const NowPlaying = ({ currentTrack, username, error, onRefresh, isListening, isL
   return (
     <div className="now-playing">
       <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
-        <img 
+        <img
           src={loadedImageUrl || placeholderImage}
           alt={loadedImageUrl ? `${currentTrack?.name || 'Unknown'} album art` : "Placeholder"}
           className={`np-image ${isFading ? 'fading' : ''}`}
-          style={{ 
-            width: '100%', 
+          style={{
+            width: '100%',
             maxWidth: '300px',
           }}
         />
         {albumArt && albumArt !== loadedImageUrl && (
-          <img 
+          <img
             src={albumArt}
             alt={`${currentTrack?.name || 'Unknown'} album art`}
             style={{ display: 'none' }}
@@ -73,9 +73,11 @@ const NowPlaying = ({ currentTrack, username, error, onRefresh, isListening, isL
           />
         )}
       </div>
-      <p><strong>{currentTrack?.name || 'Unknown'}</strong></p>
-      <p>{currentTrack?.artist['#text'] || 'Unknown Artist'}</p>
-      <button onClick={handleRefresh} disabled={isLoading}>Refresh</button>
+      <div>
+        <p><strong>{currentTrack?.name || 'Unknown'}</strong></p>
+        <p>{currentTrack?.artist['#text'] || 'Unknown Artist'}</p>
+        <button onClick={handleRefresh} disabled={isLoading}>Refresh</button>
+      </div>
     </div>
   );
 };
