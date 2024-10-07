@@ -31,18 +31,17 @@ const AppContent = () => {
   const [userStats, setUserStats] = useState(null);
   const [isListening, setIsListening] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [musicRefreshCount, setMusicRefreshCount] = useState(0);
 
   const [settings, setSettings] = useState(() => {
     const savedSettings = localStorage.getItem('appSettings');
     return savedSettings ? JSON.parse(savedSettings) : {
       saveWindowPositions: false,
-      enableTimer: true,
+      enableTimer: false,
       windows: {
-        lastfmPlayer: { x: 30, y: 22 },
-        stalkingTimer: { x: 30, y: 484.61 },
-        searchWindow: { x: 30, y: 606 },
-        settingsWindow: { x: 250, y: 22 },
+        lastfmPlayer: {x: 30, y: 22},
+        searchWindow: {x: 28, y: 639},
+        settingsWindow: {x: 29, y: 483},
+        stalkingTimer: {x: 30, y: 484.61}
       }
     };
   });
@@ -107,7 +106,7 @@ const AppContent = () => {
       setIsLoading(false);
       console.log('Data fetched successfully for:', username);
     }
-  }, [username, showToast]);
+  }, [username, showToast]); // Include all dependencies here
 
   const [resetTimer, setResetTimer] = useState(false);
 
@@ -127,7 +126,7 @@ const AppContent = () => {
 
       // If successful, update username
       setUsername(searchedUsername);
-      
+
       // Remove localStorage update
       // localStorage.setItem('lastfm_username', searchedUsername);
 
@@ -157,7 +156,7 @@ const AppContent = () => {
     console.log('Effect triggered, current username:', username);
     // Debug log to check initial username
     // console.log('Initial username:', username);
-  }, [handleMusicRefresh]);
+  }, [handleMusicRefresh, username]); // Add username to the dependency array
 
   useEffect(() => {
     if (resetTimer) {

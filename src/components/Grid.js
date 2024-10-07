@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '../contexts/ToastContext';
-import loadingGif from '../output.gif';
 
 const Grid = ({ username, isUserLoading }) => {
   const [loadedImageUrl, setLoadedImageUrl] = useState(null);
@@ -15,7 +14,7 @@ const Grid = ({ username, isUserLoading }) => {
     }
   }, [isLoading]);
 
-  const generateGrid = async () => {
+  const _generateGrid = async () => {
     if (!username) {
       showToast('Please enter a username first.');
       return;
