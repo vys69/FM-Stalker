@@ -10,7 +10,26 @@ const fetchData = async (method, username, limit = 5) => {
 };
 
 export const fetchLastFmData = async (username) => {
-  return fetchData('user.getrecenttracks', username, 10);
+  try {
+    const response = await fetch(
+      `${BASE_URL}?method=user.getrecenttracks&user=${username}&api_key=${API_KEY}&format=json&limit=10`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.message || 'Last.fm API error');
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error fetching Last.fm data:', error);
+    throw error;
+  }
 };
 
 export const fetchUserStats = async (username) => {
