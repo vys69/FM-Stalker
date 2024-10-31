@@ -1,43 +1,48 @@
 import { fetchLastFmData } from '../src/utils/api';
 
 export default async function handler(req, res) {
-  // Check if the request is from a social media crawler
-  const userAgent = req.headers['user-agent'] || '';
-  const isCrawler = /facebookexternalhit|discordbot|twitterbot|whatsapp|preview/i.test(userAgent);
-
-  if (!isCrawler) {
-    // For regular users, return nothing and let the React app handle the request
-    return res.status(200).end();
-  }
-
-  const { username } = req.query;
-
   try {
+    // Extract username from URL or query params
+    const url = new URL(req.url, `https://${req.headers.host}`);
+    const username = url.searchParams.get('username');
+
     if (!username) {
-      // Default meta tags for the main site
       return res.status(200).send(getDefaultHtml());
     }
 
-    // Fetch Last.fm data for the user
+    // Fetch Last.fm data
     const data = await fetchLastFmData(username);
     const currentTrack = data.recenttracks.track[0];
     const isPlaying = currentTrack['@attr']?.nowplaying === 'true';
 
-    // Generate HTML with meta tags for social media crawlers
-    const html = generateHtml({
-      title: `${username}'s Last.fm Status`,
-      description: `${isPlaying ? 'Now Playing' : 'Last Played'}: ${currentTrack.name} by ${currentTrack.artist['#text']}`,
-      image: currentTrack.image[3]['#text'] || '/icons/content.png',
-      url: `https://fmstalker.com?username=${username}`,
-      username,
-      track: currentTrack,
-      isPlaying
-    });
+    const html = `<!DOCTYPE html>
+    <html>
+      <head>
+        <title>${username}'s Last.fm Status</title>
+        <meta property="og:title" content="${username}'s Last.fm Status">
+        <meta property="og:description" content="${isPlaying ? '▶️ Now Playing:' : '⏸️ Last Played:'} ${currentTrack.name} by ${currentTrack.artist['#text']}">
+        <meta property="og:image" content="${currentTrack.image[3]['#text']}">
+        <meta property="og:url" content="https://fmstalker.com/?username=${username}">
+        <meta property="og:type" content="website">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="${username}'s Last.fm Status">
+        <meta name="twitter:description" content="${isPlaying ? '▶️ Now Playing:' : '⏸️ Last Played:'} ${currentTrack.name} by ${currentTrack.artist['#text']}">
+        <meta name="twitter:image" content="${currentTrack.image[3]['#text']}">
+        <meta name="theme-color" content="${isPlaying ? '#57F287' : '#ED4245'}">
+      </head>
+      <body>
+        <script>
+          window.location.href = 'https://fmstalker.com/?username=${username}';
+        </script>
+      </body>
+    </html>`;
 
-    res.status(200).send(html);
+    res.setHeader('Content-Type', 'text/html');
+    return res.status(200).send(html);
+
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).end();
+    return res.status(200).send(getDefaultHtml());
   }
 }
 
