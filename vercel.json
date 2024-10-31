@@ -1,11 +1,15 @@
 {
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "/api/meta.js",
-      "headers": {
-        "cache-control": "s-maxage=1, stale-while-revalidate"
-      }
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(facebookexternalhit|discordbot|twitterbot|whatsapp|preview)"
+        }
+      ],
+      "destination": "/api/meta"
     }
   ]
 } 

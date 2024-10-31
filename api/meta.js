@@ -1,36 +1,43 @@
 import { fetchLastFmData } from '../src/utils/api';
 
 export default async function handler(req, res) {
+  // Check if the request is from a social media crawler
+  const userAgent = req.headers['user-agent'] || '';
+  const isCrawler = /facebookexternalhit|discordbot|twitterbot|whatsapp|preview/i.test(userAgent);
+
+  if (!isCrawler) {
+    // For regular users, return nothing and let the React app handle the request
+    return res.status(200).end();
+  }
+
+  const { username } = req.query;
+
   try {
-    const { username } = req.query;
-    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://fmstalker.com';
-    
-    // If no username, return the default HTML
     if (!username) {
-      return res.send(getDefaultHtml());
+      // Default meta tags for the main site
+      return res.status(200).send(getDefaultHtml());
     }
 
-    // Fetch Last.fm data
+    // Fetch Last.fm data for the user
     const data = await fetchLastFmData(username);
     const currentTrack = data.recenttracks.track[0];
     const isPlaying = currentTrack['@attr']?.nowplaying === 'true';
-    const trackImage = currentTrack.image[3]['#text'] || '/icons/content.png';
 
-    // Generate HTML with dynamic meta tags
+    // Generate HTML with meta tags for social media crawlers
     const html = generateHtml({
-      title: `${username}'s Last.fm`,
+      title: `${username}'s Last.fm Status`,
       description: `${isPlaying ? 'Now Playing' : 'Last Played'}: ${currentTrack.name} by ${currentTrack.artist['#text']}`,
-      image: trackImage,
-      url: `${baseUrl}?username=${username}`,
+      image: currentTrack.image[3]['#text'] || '/icons/content.png',
+      url: `https://fmstalker.com?username=${username}`,
       username,
       track: currentTrack,
       isPlaying
     });
 
-    res.send(html);
+    res.status(200).send(html);
   } catch (error) {
     console.error('Error:', error);
-    res.send(getDefaultHtml());
+    res.status(500).end();
   }
 }
 
