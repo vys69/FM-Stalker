@@ -1,7 +1,7 @@
 {
   "routes": [
     {
-      "source": "/(.*)",
+      "src": "/(.*)",
       "has": [
         {
           "type": "header",
@@ -9,7 +9,7 @@
           "value": "(facebookexternalhit|discordbot|twitterbot|whatsapp|preview)"
         }
       ],
-      "destination": "/api/meta"
+      "dest": "/api/meta"
     }
   ]
 } 
