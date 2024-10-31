@@ -43,6 +43,17 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
   <title>FM-STALKER</title>
+
+  <!-- Dynamic meta tags for user embeds -->
+  <% if (username) { %>
+    <%- generateMetaTags(embedData) %>
+  <% } else { %>
+    <!-- Default meta tags for fmstalker.com -->
+    <meta property="og:title" content="FM Stalker 👀" />
+    <meta property="og:description" content="Stalk me, listen to my music, then brag about how long you've stalked me..." />
+    <meta property="og:image" content="%PUBLIC_URL%/icons/content.png" />
+    <meta property="og:type" content="website" />
+  <% } %>
 </head>
 
 <body>

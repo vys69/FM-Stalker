@@ -202,6 +202,23 @@ const AppContent = () => {
     // Apply other settings as needed
   }, [settings]);
 
+  // Add this function to handle meta tag generation
+  const generateMetaTags = (embedData) => {
+    if (!embedData) return '';
+    
+    return `
+      <meta property="og:title" content="${embedData.title}" />
+      <meta property="og:description" content="${embedData.description}" />
+      <meta property="og:video" content="${embedData.videoUrl}" />
+      <meta property="og:video:type" content="video/mp4" />
+      <meta property="og:type" content="video.other" />
+      <meta property="og:image" content="${embedData.image}" />
+      <meta name="theme-color" content="#FF0000" />
+      <meta property="og:site_name" content="FM Stalker" />
+      <meta property="og:footer" content="${embedData.status}" />
+    `;
+  };
+
   return (
     <div className="app-container">
       <div className="content" style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden' }}>
